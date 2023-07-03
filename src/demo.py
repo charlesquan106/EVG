@@ -9,6 +9,7 @@ import cv2
 
 from opts import opts
 from detectors.detector_factory import detector_factory
+import torch
 
 image_ext = ['jpg', 'jpeg', 'png', 'webp']
 video_ext = ['mp4', 'mov', 'avi', 'mkv']
@@ -19,6 +20,9 @@ def demo(opt):
   opt.debug = max(opt.debug, 1)
   Detector = detector_factory[opt.task]
   detector = Detector(opt)
+  
+  print(torch.cuda.is_available())
+  print(torch.cuda.get_device_name(0))
 
   if opt.demo == 'webcam' or \
     opt.demo[opt.demo.rfind('.') + 1:].lower() in video_ext:

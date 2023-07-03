@@ -15,14 +15,19 @@ from logger import Logger
 from datasets.dataset_factory import get_dataset
 from trains.train_factory import train_factory
 
+# from datasets.sample.ctdet_gaze import CTDet_gazeDataset
+from datasets.dataset.mpiifacegaze import MpiiFaceGaze
+import cv2
+import matplotlib.pyplot as plt
+
 
 def main(opt):
   torch.manual_seed(opt.seed)
   torch.backends.cudnn.benchmark = not opt.not_cuda_benchmark and not opt.test
   Dataset = get_dataset(opt.dataset, opt.task)
   opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
-  print(opt)
-
+  # print(opt)
+  
   logger = Logger(opt)
 
   os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
@@ -39,6 +44,35 @@ def main(opt):
   Trainer = train_factory[opt.task]
   trainer = Trainer(opt, model, optimizer)
   trainer.set_device(opt.gpus, opt.chunk_sizes, opt.device)
+  
+  print('*****************')
+  # index = 1
+
+  # dataset_test = Dataset(opt, 'train')
+  # # sample_hm = dataset_test[index]["hm"]
+  # sample = dataset_test[index]
+  # sample_input = sample["input"]
+  # sample_input = sample_input.transpose(1,2,0)
+  # sample_hm = sample["hm"]
+  # sample_hm = sample_hm.transpose(1,2,0)
+  
+  # # sample_vp = sample["vp"]
+  # # sample_vp = sample_vp.transpose(1,2,0)
+  
+  # sample_input = cv2.cvtColor(sample_input, cv2.COLOR_BGR2RGB)
+  
+  # plt.imshow(sample_input)
+  # plt.axis('off')  # 关闭坐标轴
+  # plt.show()
+  # plt.imshow(sample_hm, cmap="gray")
+  # plt.axis('off')  # 关闭坐标轴
+  # plt.show()
+  
+  # # plt.imshow(sample_vp)
+  # # plt.axis('off')  # 关闭坐标轴
+  # # plt.show()
+  
+  print('*****************')
 
   print('Setting up data...')
   val_loader = torch.utils.data.DataLoader(
@@ -65,6 +99,11 @@ def main(opt):
 
   print('Starting training...')
   best = 1e10
+  print(opt.batch_size)
+  
+  # for batch in enumerate(train_loader):
+  #   pass
+    
   for epoch in range(start_epoch + 1, opt.num_epochs + 1):
     mark = epoch if opt.save_all else 'last'
     log_dict_train, _ = trainer.train(epoch, train_loader)

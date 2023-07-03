@@ -59,6 +59,7 @@ class BaseTrainer(object):
     bar = Bar('{}/{}'.format(opt.task, opt.exp_id), max=num_iters)
     end = time.time()
     for iter_id, batch in enumerate(data_loader):
+      # print(f"train : {iter_id}")
       if iter_id >= num_iters:
         break
       data_time.update(time.time() - end)
@@ -101,6 +102,7 @@ class BaseTrainer(object):
     bar.finish()
     ret = {k: v.avg for k, v in avg_loss_stats.items()}
     ret['time'] = bar.elapsed_td.total_seconds() / 60.
+    
     return ret, results
   
   def debug(self, batch, output, iter_id):

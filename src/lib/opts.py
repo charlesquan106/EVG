@@ -11,9 +11,9 @@ class opts(object):
     self.parser = argparse.ArgumentParser()
     # basic experiment setting
     self.parser.add_argument('task', default='ctdet',
-                             help='ctdet | ddd | multi_pose | exdet')
+                             help='ctdet | ctdet_gaze | ddd | multi_pose | exdet')
     self.parser.add_argument('--dataset', default='coco',
-                             help='coco | kitti | coco_hp | pascal')
+                             help='coco | kitti | coco_hp | pascal | mpiifacegaze ')
     self.parser.add_argument('--exp_id', default='default')
     self.parser.add_argument('--test', action='store_true')
     self.parser.add_argument('--debug', type=int, default=0,
@@ -79,8 +79,17 @@ class opts(object):
     self.parser.add_argument('--input_w', type=int, default=-1, 
                              help='input width. -1 for default from dataset.')
     
+    # vp_size
+    self.parser.add_argument('--vp_h', type=int, default=1600, 
+                             help='virtual plane height.')
+    self.parser.add_argument('--vp_w', type=int, default=2560, 
+                             help='virtual plane width.')
+    # vp_size
+    self.parser.add_argument('--vp_heatmap_hw', type=int, default=10, 
+                             help='virtual plane height.')
+    
     # train
-    self.parser.add_argument('--lr', type=float, default=1.25e-4, 
+    self.parser.add_argument('--lr', type=float, default=5e-4, 
                              help='learning rate for batch size 32.')
     self.parser.add_argument('--lr_step', type=str, default='90,120',
                              help='drop learning rate by 10.')
@@ -92,7 +101,7 @@ class opts(object):
                              help='batch size on the master gpu.')
     self.parser.add_argument('--num_iters', type=int, default=-1,
                              help='default: #samples / batch_size.')
-    self.parser.add_argument('--val_intervals', type=int, default=5,
+    self.parser.add_argument('--val_intervals', type=int, default=1,
                              help='number of epochs to run validation.')
     self.parser.add_argument('--trainval', action='store_true',
                              help='include validation in training and '
@@ -105,7 +114,7 @@ class opts(object):
                              help='multi scale test augmentation.')
     self.parser.add_argument('--nms', action='store_true',
                              help='run nms in testing.')
-    self.parser.add_argument('--K', type=int, default=100,
+    self.parser.add_argument('--K', type=int, default=2,
                              help='max number of output objects.') 
     self.parser.add_argument('--not_prefetch_test', action='store_true',
                              help='not use parallal data pre-processing.')
@@ -186,6 +195,10 @@ class opts(object):
                              help='category specific bounding box size.')
     self.parser.add_argument('--not_reg_offset', action='store_true',
                              help='not regress local offset.')
+    # ctdet_gaze
+    self.parser.add_argument('--not_face_grid', action='store_true',
+                          help='not face grid.')
+    
     # exdet
     self.parser.add_argument('--agnostic_ex', action='store_true',
                              help='use category agnostic extreme points.')
@@ -242,6 +255,8 @@ class opts(object):
     opt.reg_bbox = not opt.not_reg_bbox
     opt.hm_hp = not opt.not_hm_hp
     opt.reg_hp_offset = (not opt.not_reg_hp_offset) and opt.hm_hp
+    
+    opt.face_grid = not opt.not_face_grid
 
     if opt.head_conv == -1: # init default head_conv
       opt.head_conv = 256 if 'dla' in opt.arch else 64
@@ -318,6 +333,13 @@ class opts(object):
                    'wh': 2 if not opt.cat_spec_wh else 2 * opt.num_classes}
       if opt.reg_offset:
         opt.heads.update({'reg': 2})
+    elif opt.task == 'ctdet_gaze':
+      # assert opt.dataset in ['mpiifacegaze']
+      opt.heads = {'hm': opt.num_classes}
+      if opt.reg_offset:
+        opt.heads.update({'reg': 2})
+      if opt.face_grid:
+        opt.heads.update({'face_grid': 2})
     elif opt.task == 'multi_pose':
       # assert opt.dataset in ['coco_hp']
       opt.flip_idx = dataset.flip_idx

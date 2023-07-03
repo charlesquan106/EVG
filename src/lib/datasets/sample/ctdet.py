@@ -16,6 +16,7 @@ import math
 
 class CTDetDataset(data.Dataset):
   def _coco_box_to_bbox(self, box):
+    # coco bbox format: x, y, w ,h 
     bbox = np.array([box[0], box[1], box[0] + box[2], box[1] + box[3]],
                     dtype=np.float32)
     return bbox
@@ -84,6 +85,9 @@ class CTDetDataset(data.Dataset):
     trans_output = get_affine_transform(c, s, 0, [output_w, output_h])
 
     hm = np.zeros((num_classes, output_h, output_w), dtype=np.float32)
+    # print("-------hm------hm")
+    # print(hm.shape)
+    # print(hm[1])
     wh = np.zeros((self.max_objs, 2), dtype=np.float32)
     dense_wh = np.zeros((2, output_h, output_w), dtype=np.float32)
     reg = np.zeros((self.max_objs, 2), dtype=np.float32)
@@ -100,6 +104,8 @@ class CTDetDataset(data.Dataset):
       ann = anns[k]
       bbox = self._coco_box_to_bbox(ann['bbox'])
       cls_id = int(self.cat_ids[ann['category_id']])
+      # print(ann['category_id'])
+      # print(cls_id)
       if flipped:
         bbox[[0, 2]] = width - bbox[[2, 0]] - 1
       bbox[:2] = affine_transform(bbox[:2], trans_output)
@@ -115,6 +121,9 @@ class CTDetDataset(data.Dataset):
           [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2], dtype=np.float32)
         ct_int = ct.astype(np.int32)
         draw_gaussian(hm[cls_id], ct_int, radius)
+        print("------------------------")
+        # print(hm[cls_id], ct_int, radius)
+        print("radius",f'{radius}')
         wh[k] = 1. * w, 1. * h
         ind[k] = ct_int[1] * output_w + ct_int[0]
         reg[k] = ct - ct_int
