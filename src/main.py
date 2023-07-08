@@ -46,31 +46,38 @@ def main(opt):
   trainer.set_device(opt.gpus, opt.chunk_sizes, opt.device)
   
   print('*****************')
-  # index = 1
+  
+  for i in range(1):
+    index = i
 
-  # dataset_test = Dataset(opt, 'train')
-  # # sample_hm = dataset_test[index]["hm"]
-  # sample = dataset_test[index]
-  # sample_input = sample["input"]
-  # sample_input = sample_input.transpose(1,2,0)
-  # sample_hm = sample["hm"]
-  # sample_hm = sample_hm.transpose(1,2,0)
-  
-  # # sample_vp = sample["vp"]
-  # # sample_vp = sample_vp.transpose(1,2,0)
-  
-  # sample_input = cv2.cvtColor(sample_input, cv2.COLOR_BGR2RGB)
-  
-  # plt.imshow(sample_input)
-  # plt.axis('off')  # 关闭坐标轴
-  # plt.show()
-  # plt.imshow(sample_hm, cmap="gray")
-  # plt.axis('off')  # 关闭坐标轴
-  # plt.show()
-  
-  # # plt.imshow(sample_vp)
-  # # plt.axis('off')  # 关闭坐标轴
-  # # plt.show()
+    dataset_test = Dataset(opt, 'train')
+    # sample_hm = dataset_test[index]["hm"]
+    sample = dataset_test[index]
+    # smaple_c = sample["meta"]["c"]
+    # smaple_s = sample["meta"]["s"]
+    # print(f"c = {smaple_c}")
+    # print(f"s = {smaple_s}")
+    
+    sample_input = sample["input"]
+    sample_input = sample_input.transpose(1,2,0)
+    sample_hm = sample["hm"]
+    sample_hm = sample_hm.transpose(1,2,0)
+    
+    # sample_vp = sample["vp"]
+    # sample_vp = sample_vp.transpose(1,2,0)
+    
+    sample_input = cv2.cvtColor(sample_input, cv2.COLOR_BGR2RGB)
+    
+    # plt.imshow(sample_input)
+    # plt.axis('off')  # 关闭坐标轴
+    # plt.show()
+    # plt.imshow(sample_hm, cmap="gray")
+    # plt.axis('off')  # 关闭坐标轴
+    # plt.show()
+    
+    # plt.imshow(sample_vp)
+    # plt.axis('off')  # 关闭坐标轴
+    # plt.show()
   
   print('*****************')
 
@@ -88,6 +95,7 @@ def main(opt):
     val_loader.dataset.run_eval(preds, opt.save_dir)
     return
 
+  
   train_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'train'), 
       batch_size=opt.batch_size, 

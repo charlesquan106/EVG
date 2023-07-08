@@ -89,13 +89,13 @@ class opts(object):
                              help='virtual plane height.')
     
     # train
-    self.parser.add_argument('--lr', type=float, default=5e-4, 
+    self.parser.add_argument('--lr', type=float, default=2.5e-4, 
                              help='learning rate for batch size 32.')
     self.parser.add_argument('--lr_step', type=str, default='90,120',
                              help='drop learning rate by 10.')
     self.parser.add_argument('--num_epochs', type=int, default=140,
                              help='total training epochs.')
-    self.parser.add_argument('--batch_size', type=int, default=32,
+    self.parser.add_argument('--batch_size', type=int, default=112,
                              help='batch size')
     self.parser.add_argument('--master_batch_size', type=int, default=-1,
                              help='batch size on the master gpu.')

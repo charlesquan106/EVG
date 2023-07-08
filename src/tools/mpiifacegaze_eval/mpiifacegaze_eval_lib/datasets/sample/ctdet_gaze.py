@@ -92,10 +92,10 @@ class CTDet_gazeDataset(data.Dataset):
       unit_pixel = eval(unit_pixel)
       sc_width, sc_height = unit_pixel  
       # print("screenSize unit_pixel",f'{sc_height}, {sc_width}')
-      sc = np.ones((1, sc_height, sc_width), dtype=np.float32)
+      sc = np.ones((1, sc_width, sc_height), dtype=np.float32)
      
-      vp_height, vp_width = self.opt.vp_h, self.opt.vp_w
-      vp = np.zeros((1, vp_height, vp_width), dtype=np.float32)
+      vp_width, vp_height = self.opt.vp_w, self.opt.vp_h
+      vp = np.zeros((1, vp_width, vp_height), dtype=np.float32)
       vp = vp.transpose(1,2,0)
       
       
@@ -107,7 +107,7 @@ class CTDet_gazeDataset(data.Dataset):
       ann_id = ann['id']
       # print(f"id: {ann_id}")
       sc_gazepoint = np.array([x,y],dtype=np.int64)
-      sc[0, sc_gazepoint[1], sc_gazepoint[0]] = 20
+      sc[0, sc_gazepoint[0], sc_gazepoint[1]] = 20
       sc = sc.transpose(1,2,0)
       
       
@@ -124,9 +124,10 @@ class CTDet_gazeDataset(data.Dataset):
       # print(f"vp_with_sc: {vp.shape[0]},{vp.shape[1]}")
       
       vp_gazepoint_idx = np.where(vp == 20)
+      # print("vp_gazepoint_idx")
       # print(vp_gazepoint_idx)
       
-      vp_gazepoint = np.array([vp_gazepoint_idx[1],vp_gazepoint_idx[0]])
+      vp_gazepoint = np.array([vp_gazepoint_idx[0],vp_gazepoint_idx[1]])
 
       flipped = False
       if self.split == 'train':
@@ -142,10 +143,17 @@ class CTDet_gazeDataset(data.Dataset):
         output_w = (vp_width | self.opt.pad) + 1
         vp_s = np.array([output_w, output_h], dtype=np.float32)
       else:
-        vp_s = max(vp_width, vp_height) * 1.0
+        # vp_s = max(vp_width, vp_height) * 1.0
+        vp_s = np.array([vp_width, vp_height], dtype=np.float32)
+        # print(f"vp_s {vp_s}")
+        
+        
+      
       # print(f"vp_s: {vp_s}")
           
+      # print(f"output_wh {output_w} {output_w}")
       trans_vp2out = get_affine_transform(vp_c, vp_s, 0, [output_w, output_h])
+      # print(f"trans_vp2out - trans : {trans_vp2out}")
       vp_trans_out = cv2.warpAffine(vp, trans_vp2out, 
                         (output_w, output_h),
                         flags=cv2.INTER_LINEAR)
@@ -178,7 +186,7 @@ class CTDet_gazeDataset(data.Dataset):
         # print("reg[k]",f'{reg[k]}')
         # print("radius",f'{radius}')
 
-        gt_det.append([ct[1], ct[0], 1, cls_id])
+        gt_det.append([ct[0], ct[1], 1, cls_id])
         # print("dataset processing")
         # print([ct[1], ct[0], 1, cls_id])
         
@@ -195,6 +203,6 @@ class CTDet_gazeDataset(data.Dataset):
     if self.opt.debug > 0 or not self.split == 'train':
       gt_det = np.array(gt_det, dtype=np.float32) if len(gt_det) > 0 else \
                np.zeros((1, 4), dtype=np.float32)
-      meta = {'c': c, 's': s,'vp_c': vp_c, 'vp_s': vp_s, 'gt_det': gt_det, 'img_id': img_id}
+      meta = {'c': c, 's': s,'vp_c': vp_c, 'vp_s': vp_s, 'gt_det': gt_det, 'img_id': img_id, "vp_gazepoint": vp_gazepoint}
       ret['meta'] = meta
     return ret

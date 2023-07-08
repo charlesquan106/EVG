@@ -61,7 +61,10 @@ def get_affine_transform(center,
 
 
 def affine_transform(pt, t):
-    new_pt = np.array([pt[0], pt[1], 1.], dtype=np.float32).T
+    pt_x = float(pt[0])
+    pt_y = float(pt[1])
+    new_pt = np.array([pt_x, pt_y, 1.], dtype=np.float32).T
+    # new_pt = np.array([pt[0], pt[1], 1.], dtype=np.float32).T
     new_pt = np.dot(t, new_pt)
     return new_pt[:2]
 

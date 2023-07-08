@@ -13,6 +13,7 @@ from utils.debugger import Debugger
 from utils.post_process import ctdet_gaze_post_process
 from utils.oracle_utils import gen_oracle_map
 from .base_trainer import BaseTrainer
+import matplotlib.pyplot as plt
 
 class CtdetGazeLoss(torch.nn.Module):
   def __init__(self, opt):
@@ -25,21 +26,60 @@ class CtdetGazeLoss(torch.nn.Module):
   def forward(self, outputs, batch):
     opt = self.opt
     hm_loss, off_loss = 0, 0
+    # print(f"outputs['hm']: {outputs['hm'].shape}")
+    # print(f"batch['hm']: {batch['hm'].shape}")
+    
     for s in range(opt.num_stacks):
+      print(f"s: {s}")
       output = outputs[s]
+      
+      # output_hm = output['hm'][0].detach().cpu().numpy()
+      # output_hm = output_hm.transpose(1, 2, 0)
+      # print(f"output_hm_64,64: {output_hm[64][64]}")
+      # print(f"output_hm_65,65: {output_hm[65][65]}")
+      # plt.imshow(output_hm, cmap="gray")
+      # plt.axis('off') 
+      # plt.show()
+      
       if not opt.mse_loss:
         output['hm'] = _sigmoid(output['hm'])
 
       if opt.eval_oracle_hm:
+        print("eval_oracle_hm")
         output['hm'] = batch['hm']
         
       if opt.eval_oracle_offset:
+        print("eval_oracle_offset")
         output['reg'] = torch.from_numpy(gen_oracle_map(
           batch['reg'].detach().cpu().numpy(), 
           batch['ind'].detach().cpu().numpy(), 
           output['reg'].shape[3], output['reg'].shape[2])).to(opt.device)
 
+      # output_hm_sig = _sigmoid(output['hm'][0])
+      # print(f"output_hm_sig: {output_hm_sig.shape}")
+      # output_hm_sig = output_hm_sig.permute(1, 2, 0)
+      # output_hm_sig = output_hm_sig.detach().cpu().numpy()
+      # print(f"output_hm_sig_64,64: {output_hm_sig[64][64]}")
+      # print(f"output_hm_sig_65,65: {output_hm_sig[65][65]}")
+      
+      # batch_hm = batch["hm"][0].detach().cpu().numpy()
+      # print(f"batch_hm: {batch_hm.shape}")
+      # # batch_hm = batch_hm.transpose(1,2,0)
+      # batch_hm = batch_hm.transpose(1, 2, 0)
+
+      # # plt.imshow(output_hm_sig, cmap="gray")
+      # # plt.axis('off')  
+      # # plt.show()
+      
+      # plt.imshow(batch_hm, cmap="gray")
+      # plt.axis('off')  
+      # plt.show()
+
       hm_loss += self.crit(output['hm'], batch['hm']) / opt.num_stacks
+      # print(f"hm_loss: {hm_loss}")
+      
+      # print(f"output['reg']: {output['reg']}")
+      # print(f"opt.reg_offset: {opt.reg_offset}")
 
       if opt.reg_offset and opt.off_weight > 0:
         off_loss += self.crit_reg(output['reg'], batch['reg_mask'],

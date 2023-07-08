@@ -13,12 +13,7 @@ from mpiifacegaze_eval_lib.opts import opts
 from mpiifacegaze_eval_lib.datasets.dataset_factory import get_dataset
 from mpiifacegaze_eval_lib.models.model import create_model, load_model, save_model
 from mpiifacegaze_eval_lib.models.decode import ctdet_gaze_decode
-from mpiifacegaze_eval_lib.post_process import ctdet_gaze_post_process
-
-# from gaze_estimation import (GazeEstimationMethod, create_dataloader,
-#                              create_model)
-# from gaze_estimation.utils import compute_angle_error, load_config, save_config
-
+from mpiifacegaze_eval_lib.utils.post_process import ctdet_gaze_post_process
 
 
 def euclidean_distance(x1, y1, x2, y2):
@@ -54,11 +49,14 @@ def test(model, test_loader, opt):
                 if k != 'meta':
                     batch[k] = batch[k].to(device=opt.device, non_blocking=True) 
             output = model(batch['input'])
+            # print(output)
             output = output[-1]
             reg = output['reg'] if opt.reg_offset else None
-            dets = ctdet_gaze_decode(output['hm'], reg=reg, K=opt.K)
             
-            dets = dets.detach().cpu().numpy().reshape(1, -1, dets.shape[2])
+            dets = ctdet_gaze_decode(output['hm'], reg=reg, K=opt.K)
+            # print(f"dets: {dets}")
+            dets = dets.detach().cpu().numpy()
+            dets = dets.reshape(1, -1, dets.shape[2])
             dets[:, :, :2] *= opt.down_ratio
             # print(dets)
             dets_gt = batch['meta']['gt_det'].numpy().reshape(1, -1, dets.shape[2])
@@ -81,25 +79,31 @@ def test(model, test_loader, opt):
             # print(f"dets_out: {dets_out}")
             for i in range(1):
                 cls_id = 1
-                # print(f"dets_out: {dets_out[i][cls_id][0:1]}")
+                print(f"dets_out: {dets_out[i][cls_id][0:1]}")
                 dets_coord = dets_out[i][cls_id][0][:2]
             
             dets_gt_out = ctdet_gaze_post_process(
                 dets_gt.copy(), batch['meta']['vp_c'].cpu().numpy(),
                 batch['meta']['vp_s'].cpu().numpy(),
                 batch['hm'].shape[2], batch['hm'].shape[3], batch['hm'].shape[1])
-            
 
-            # print(f"dets_gt_out: {dets_gt_out}")
             for i in range(1):
                 cls_id = 1
                 # print(f"dets_gt_out: {dets_gt_out[i][cls_id][0][:2]}")
                 dets_gt_coord = dets_gt_out[i][cls_id][0][:2]
+                print(f"dets_gt_coord: {dets_gt_coord}")
+                
+            vp_gazepoint = batch['meta']['vp_gazepoint'].cpu().numpy()
+            print(f"vp_gazepoint : {vp_gazepoint}")
             
 
             output_hm = output["hm"][0].cpu()
             # print(f"output_hm: {output_hm}")
             output_hm = output_hm.permute(1, 2, 0)
+            max_index = torch.argmax(output_hm)
+            max_coord = torch.nonzero(max_index.view(-1) == torch.arange(output_hm.numel()), as_tuple=False)
+            max_coord_2d = (max_coord % output_hm.size(1), max_coord // output_hm.size(1))
+            print(f"output_hm max index: {max_coord_2d}")
             
             batch_hm = batch["hm"][0].cpu()
             # batch_hm = batch_hm.transpose(1,2,0)
@@ -116,7 +120,7 @@ def test(model, test_loader, opt):
             
             L2_error = L2_distance(dets_coord, dets_gt_coord)
             L2_errors.update(L2_error)
-            # break
+            break
 
     mean_L2_errors = L2_errors.avg
 
@@ -139,8 +143,8 @@ def main(opt):
     model = create_model(opt.arch, opt.heads, opt.head_conv)
     optimizer = torch.optim.Adam(model.parameters(), opt.lr)
     start_epoch = 0
-    
-    model_path = "/home/nm6114091/Python/CenterNet/src/tools/mpiifacegaze_eval/model_2023-07-01-23-59.pth"
+
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/model_best.pth"
     
 
     model = load_model(model, model_path)

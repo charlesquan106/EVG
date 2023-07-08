@@ -30,6 +30,7 @@ class CTDet_gazeDataset(data.Dataset):
     ann_ids = self.coco.getAnnIds(imgIds=[img_id])
     anns = self.coco.loadAnns(ids=ann_ids)
     num_objs = min(len(anns), self.max_objs)
+    # print(num_objs)
   
     img = cv2.imread(img_path)
     
@@ -92,10 +93,10 @@ class CTDet_gazeDataset(data.Dataset):
       unit_pixel = eval(unit_pixel)
       sc_width, sc_height = unit_pixel  
       # print("screenSize unit_pixel",f'{sc_height}, {sc_width}')
-      sc = np.ones((1, sc_height, sc_width), dtype=np.float32)
+      sc = np.ones((1, sc_width, sc_height), dtype=np.float32)
      
-      vp_height, vp_width = self.opt.vp_h, self.opt.vp_w
-      vp = np.zeros((1, vp_height, vp_width), dtype=np.float32)
+      vp_width, vp_height = self.opt.vp_w, self.opt.vp_h
+      vp = np.zeros((1, vp_width, vp_height), dtype=np.float32)
       vp = vp.transpose(1,2,0)
       
       
@@ -107,7 +108,7 @@ class CTDet_gazeDataset(data.Dataset):
       ann_id = ann['id']
       # print(f"id: {ann_id}")
       sc_gazepoint = np.array([x,y],dtype=np.int64)
-      sc[0, sc_gazepoint[1], sc_gazepoint[0]] = 20
+      sc[0, sc_gazepoint[0], sc_gazepoint[1]] = 20
       sc = sc.transpose(1,2,0)
       
       
@@ -126,7 +127,7 @@ class CTDet_gazeDataset(data.Dataset):
       vp_gazepoint_idx = np.where(vp == 20)
       # print(vp_gazepoint_idx)
       
-      vp_gazepoint = np.array([vp_gazepoint_idx[1],vp_gazepoint_idx[0]])
+      vp_gazepoint = np.array([vp_gazepoint_idx[0],vp_gazepoint_idx[1]])
 
       flipped = False
       if self.split == 'train':

@@ -193,7 +193,7 @@ class opts(object):
                                   'just apply regression on center point.')
     self.parser.add_argument('--cat_spec_wh', action='store_true',
                              help='category specific bounding box size.')
-    self.parser.add_argument('--not_reg_offset', action='store_false',
+    self.parser.add_argument('--not_reg_offset', action='store_true',
                              help='not regress local offset.')
     # store_false
     # ctdet_gaze

@@ -23,6 +23,35 @@ def transform_preds(coords, center, scale, output_size):
         target_coords[p, 0:2] = affine_transform(coords[p, 0:2], trans)
     return target_coords
 
+# def transform_preds(coords, center, scale, output_size):
+#     target_coords = np.zeros(coords.shape)
+#     # trans = get_affine_transform(center, scale, 0, output_size, inv=1)
+#     trans = get_affine_transform(center, scale, 0, output_size)
+#     print(f"transform_preds - trans : {trans}")
+    
+#     # 擴展仿射變換矩陣的大小為 3x3
+#     extended_affine_matrix = np.vstack((trans, [0, 0, 1]))
+
+#     # 計算擴展矩陣的逆矩陣
+#     inverse_extended_affine_matrix = np.linalg.inv(extended_affine_matrix)
+
+#     # 提取原始變換的逆矩陣部分
+#     inverse_trans = inverse_extended_affine_matrix[:2, :]
+    
+    
+#     # print(f"trans : {trans}")
+#     for p in range(coords.shape[0]):
+      
+#         print(f"coords[p, 0:2] : {coords[p, 0:2]}")
+#         target_coords[p, 0:2] = affine_transform(coords[p, 0:2], inverse_trans)
+        
+#         reversed_point = cv2.transform(coords[p, 0:2].reshape(1, -1, 2), inverse_trans)
+#         reversed_point = reversed_point.reshape(-1, 2)
+#         print(f"reversed_point : {reversed_point}")
+#         print(f"target_coords : {target_coords}")
+#     return target_coords
+  
+
 
 def get_affine_transform(center,
                          scale,
@@ -61,10 +90,12 @@ def get_affine_transform(center,
 
 
 def affine_transform(pt, t):
-    new_pt = np.array([pt[0], pt[1], 1.], dtype=np.float32).T
+    pt_x = float(pt[0])
+    pt_y = float(pt[1])
+    new_pt = np.array([pt_x, pt_y, 1.], dtype=np.float32).T
+    # new_pt = np.array([pt[0], pt[1], 1.], dtype=np.float32).T
     new_pt = np.dot(t, new_pt)
     return new_pt[:2]
-
 
 def get_3rd_point(a, b):
     direct = a - b
