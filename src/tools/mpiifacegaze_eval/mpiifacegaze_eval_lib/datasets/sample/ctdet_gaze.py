@@ -60,9 +60,9 @@ class CTDet_gazeDataset(data.Dataset):
                          flags=cv2.INTER_LINEAR)
 
     inp = (inp.astype(np.float32) / 255.)
-    if self.split == 'train' and not self.opt.no_color_aug:
-      color_aug(self._data_rng, inp, self._eig_val, self._eig_vec)
-    inp = (inp - self.mean) / self.std
+    # if self.split == 'train' and not self.opt.no_color_aug:
+    #   color_aug(self._data_rng, inp, self._eig_val, self._eig_vec)
+    # inp = (inp - self.mean) / self.std
     inp = inp.transpose(2, 0, 1)
 
     output_h = input_h // self.opt.down_ratio

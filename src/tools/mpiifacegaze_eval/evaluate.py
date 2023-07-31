@@ -48,19 +48,44 @@ def test(model, test_loader, opt):
             for k in batch:
                 if k != 'meta':
                     batch[k] = batch[k].to(device=opt.device, non_blocking=True) 
-            output = model(batch['input'])
-            # print(output)
-            output = output[-1]
-            reg = output['reg'] if opt.reg_offset else None
+            outputs = model(batch['input'])
+            # print(f"shape of input {batch['input'].shape}")
             
-            dets = ctdet_gaze_decode(output['hm'], reg=reg, K=opt.K)
+            # batch_image = batch['input']
+            
+            # output_image = batch_image[0].detach().cpu().numpy()
+            # output_image = output_image.transpose(1, 2, 0)
+            # plt.imshow(output_image, cmap="gray")
+            # plt.axis('off')  # 关闭坐标轴
+            # plt.show()
+
+            
+            img_id = batch['meta']['img_id']
+            # print(f"img_id : {img_id}")
+            # print(output)
+            output = outputs[-1]
+            hm = output['hm'].sigmoid_()
+            
+            # print(f"shape of hm {hm.shape}")
+            
+            # output_hm = output['hm'][0].detach().cpu().numpy()
+            # output_hm = output_hm.transpose(1, 2, 0)
+            
+            # plt.imshow(output_hm, cmap="gray")
+            # plt.axis('off')  # 关闭坐标轴
+            # plt.show()
+            
+            
+            
+            reg = output['reg'] if opt.reg_offset else None
+            dets = ctdet_gaze_decode(hm, reg=reg, K=opt.K)
             # print(f"dets: {dets}")
             dets = dets.detach().cpu().numpy()
             dets = dets.reshape(1, -1, dets.shape[2])
-            dets[:, :, :2] *= opt.down_ratio
-            # print(dets)
+            # dets[:, :, :2] *= opt.down_ratio
+            # print(f"dets: {dets}")
             dets_gt = batch['meta']['gt_det'].numpy().reshape(1, -1, dets.shape[2])
-            # print(dets_gt)
+            # print(f"dets_gt: {dets_gt}")
             # dets_gt[:, :, :2] *= opt.down_ratio
             # print(dets_gt)
             # print(dets_gt.shape)
@@ -79,8 +104,8 @@ def test(model, test_loader, opt):
             # print(f"dets_out: {dets_out}")
             for i in range(1):
                 cls_id = 1
-                print(f"dets_out: {dets_out[i][cls_id][0:1]}")
-                dets_coord = dets_out[i][cls_id][0][:2]
+                dets_org_coord = dets_out[i][cls_id][0][:2]
+                # print(f"dets_org_coord: {dets_org_coord}")
             
             dets_gt_out = ctdet_gaze_post_process(
                 dets_gt.copy(), batch['meta']['vp_c'].cpu().numpy(),
@@ -90,37 +115,84 @@ def test(model, test_loader, opt):
             for i in range(1):
                 cls_id = 1
                 # print(f"dets_gt_out: {dets_gt_out[i][cls_id][0][:2]}")
-                dets_gt_coord = dets_gt_out[i][cls_id][0][:2]
-                print(f"dets_gt_coord: {dets_gt_coord}")
+                dets_gt_org_coord = dets_gt_out[i][cls_id][0][:2]
+                # print(f"dets_gt_org_coord: {dets_gt_org_coord}")
                 
-            vp_gazepoint = batch['meta']['vp_gazepoint'].cpu().numpy()
-            print(f"vp_gazepoint : {vp_gazepoint}")
+            # vp_gazepoint = batch['meta']['vp_gazepoint'].cpu().numpy()
+            # print(f"vp_gazepoint : {vp_gazepoint}")
             
-
-            output_hm = output["hm"][0].cpu()
+            #-------------- manual find heat map max ----------------
+            output_hm = output['hm'][0].detach().cpu().numpy()
             # print(f"output_hm: {output_hm}")
-            output_hm = output_hm.permute(1, 2, 0)
-            max_index = torch.argmax(output_hm)
-            max_coord = torch.nonzero(max_index.view(-1) == torch.arange(output_hm.numel()), as_tuple=False)
-            max_coord_2d = (max_coord % output_hm.size(1), max_coord // output_hm.size(1))
-            print(f"output_hm max index: {max_coord_2d}")
+            output_hm = output_hm.transpose(1, 2, 0)
+            # max_index = torch.argmax(output_hm)
+            # max_coord = torch.nonzero(max_index.view(-1) == torch.arange(output_hm.numel()), as_tuple=False)
+            # max_coord_2d = (max_coord % output_hm.size(1), max_coord // output_hm.size(1))
+            # print(f"output_hm max index: {max_coord_2d}")
+               
+            # plt.imshow(output_hm, cmap="gray")
+            # plt.axis('off')  # 关闭坐标轴
+            # plt.show()
             
-            batch_hm = batch["hm"][0].cpu()
+            batch_hm = batch['hm'][0].detach().cpu().numpy()
             # batch_hm = batch_hm.transpose(1,2,0)
-            batch_hm = batch_hm.permute(1, 2, 0)
+            batch_hm = batch_hm.transpose(1, 2, 0)
+            
+            # plt.imshow(batch_hm, cmap="gray")
+            # plt.axis('off')  # 关闭坐标轴
+            # plt.show()
+            
+            
+            for i in range(1):
+                cls_id = 1
+                dets_coord = dets[0][0][:2]
+                # print(f"dets_coord: {dets_coord}")
+                
+                dets_gt_coord = dets_gt[0][0][:2]
+                # print(f"dets_gt_coord: {dets_gt_coord}")
+                
+            # output_hw = opt.input_res // opt.down_ratio
+            # # print(f"output_hw: {output_hw}")
+            # hm_over = np.zeros((output_hw, output_hw, 1), dtype=np.float32)
+            # dets_coord_int = dets_coord.astype(np.int32)
+            # dets_gt_coord_int = dets_gt_coord.astype(np.int32)
+            
+            # hm_over[dets_coord_int[1],dets_coord_int[0],0] =5  
+            # hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],0] =15 
+            # hm_over = output_hm + hm_over
+            
+            output_hw = opt.input_res // opt.down_ratio
+            # print(f"output_hw: {output_hw}")
+            hm_over = np.zeros((output_hw, output_hw, 3), dtype=np.float32)
+            dets_coord_int = dets_coord.astype(np.int32)
+            dets_gt_coord_int = dets_gt_coord.astype(np.int32)
 
-            plt.imshow(output_hm, cmap="gray")
-            plt.axis('off')  # 关闭坐标轴
-            plt.show()
+            # output_hm_min = np.min(output_hm)
+            output_hm_norm = (output_hm-np.min(output_hm))/(np.max(output_hm)-np.min(output_hm))
+
+            for channel_i in range(3):
+                hm_over[:,:,channel_i] = np.squeeze(output_hm_norm)
+            hm_over[dets_coord_int[1],dets_coord_int[0],0] =0  
+            hm_over[dets_coord_int[1],dets_coord_int[0],1] =0  
+            hm_over[dets_coord_int[1],dets_coord_int[0],2] =1  # blue
+            hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],0] =1  # red
+            hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],1] =0  
+            hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],2] =0  
+
             
-            plt.imshow(batch_hm, cmap="gray")
-            plt.axis('off')  # 关闭坐标轴
-            plt.show()
             
             
-            L2_error = L2_distance(dets_coord, dets_gt_coord)
+            L2_error = L2_distance(dets_org_coord, dets_gt_org_coord)
             L2_errors.update(L2_error)
-            break
+            
+            
+            # print(f"L2_error = {L2_error}")
+            
+            # plt.title(f"error = {L2_error}")
+            # plt.imshow(hm_over, cmap="gray")
+            # plt.axis('off')  # 关闭坐标轴
+            # plt.show()
+            # break
 
     mean_L2_errors = L2_errors.avg
 
@@ -144,8 +216,13 @@ def main(opt):
     optimizer = torch.optim.Adam(model.parameters(), opt.lr)
     start_epoch = 0
 
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/model_best.pth"
-    
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_res18_512_ep70/logs_2023-07-08-23-52/model_best.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep3_test/logs_2023-07-08-18-02/model_best.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70/logs_2023-07-08-20-11/model_best.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_256/logs_2023-07-09-17-49/model_45.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_one_person/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all/model_70.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_res18_512_ep70_all/model_70.pth"
 
     model = load_model(model, model_path)
     # if opt.load_model != '':
@@ -188,7 +265,7 @@ def main(opt):
     L2_distance = test(model, test_loader, opt)
     # print(L2_distance.shape)
 
-    print(f'The mean error distance (mm): {L2_distance:.2f}')
+    print(f'The mean error distance (pixel): {L2_distance:.2f}')
 
     # output_path = output_dir / 'predictions.npy'
     # np.save(output_path, predictions.numpy())

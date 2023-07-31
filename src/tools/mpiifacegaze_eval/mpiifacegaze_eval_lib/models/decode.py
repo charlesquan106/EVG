@@ -470,20 +470,20 @@ def ctdet_decode(heat, wh, reg=None, cat_spec_wh=False, K=100):
       
     scores, inds, clses, ys, xs = _topk(heat, K=K)
     if reg is not None:
-      reg = _transpose_and_gather_feat(reg, inds)
-      reg = reg.view(batch, K, 2)
-      xs = xs.view(batch, K, 1) + reg[:, :, 0:1]
-      ys = ys.view(batch, K, 1) + reg[:, :, 1:2]
+        reg = _transpose_and_gather_feat(reg, inds)
+        reg = reg.view(batch, K, 2)
+        xs = xs.view(batch, K, 1) + reg[:, :, 0:1]
+        ys = ys.view(batch, K, 1) + reg[:, :, 1:2]
     else:
-      xs = xs.view(batch, K, 1) + 0.5
-      ys = ys.view(batch, K, 1) + 0.5
+        xs = xs.view(batch, K, 1) + 0.5
+        ys = ys.view(batch, K, 1) + 0.5
     wh = _transpose_and_gather_feat(wh, inds)
     if cat_spec_wh:
-      wh = wh.view(batch, K, cat, 2)
-      clses_ind = clses.view(batch, K, 1, 1).expand(batch, K, 1, 2).long()
-      wh = wh.gather(2, clses_ind).view(batch, K, 2)
+        wh = wh.view(batch, K, cat, 2)
+        clses_ind = clses.view(batch, K, 1, 1).expand(batch, K, 1, 2).long()
+        wh = wh.gather(2, clses_ind).view(batch, K, 2)
     else:
-      wh = wh.view(batch, K, 2)
+        wh = wh.view(batch, K, 2)
     clses  = clses.view(batch, K, 1).float()
     scores = scores.view(batch, K, 1)
     bboxes = torch.cat([xs - wh[..., 0:1] / 2, 
@@ -499,17 +499,24 @@ def ctdet_gaze_decode(heat, reg=None, K=100):
 
     # heat = torch.sigmoid(heat)
     # perform nms on heatmaps
-    heat = _nms(heat)
+    
+    # heat = _nms(heat)
       
     scores, inds, clses, ys, xs = _topk(heat, K=K)
+    # print("----in ctdet_gaze_decode-----")
+    # print(f"inds: {inds}")
+    # print(f"scores: {scores}")
+    
+    
     if reg is not None:
-      reg = _transpose_and_gather_feat(reg, inds)
-      reg = reg.view(batch, K, 2)
-      xs = xs.view(batch, K, 1) + reg[:, :, 0:1]
-      ys = ys.view(batch, K, 1) + reg[:, :, 1:2]
+        reg = _transpose_and_gather_feat(reg, inds)
+        reg = reg.view(batch, K, 2)
+        print(f"reg: {reg}")
+        xs = xs.view(batch, K, 1) + reg[:, :, 0:1]
+        ys = ys.view(batch, K, 1) + reg[:, :, 1:2]
     else:
-      xs = xs.view(batch, K, 1) + 0.5
-      ys = ys.view(batch, K, 1) + 0.5
+        xs = xs.view(batch, K, 1) + 0.5
+        ys = ys.view(batch, K, 1) + 0.5
     clses  = clses.view(batch, K, 1).float()
     scores = scores.view(batch, K, 1)
     gp = torch.cat([xs, ys], dim=2)

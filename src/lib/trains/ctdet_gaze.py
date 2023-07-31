@@ -14,6 +14,9 @@ from utils.post_process import ctdet_gaze_post_process
 from utils.oracle_utils import gen_oracle_map
 from .base_trainer import BaseTrainer
 import matplotlib.pyplot as plt
+import os
+import cv2
+from datetime import datetime
 
 class CtdetGazeLoss(torch.nn.Module):
   def __init__(self, opt):
@@ -28,18 +31,12 @@ class CtdetGazeLoss(torch.nn.Module):
     hm_loss, off_loss = 0, 0
     # print(f"outputs['hm']: {outputs['hm'].shape}")
     # print(f"batch['hm']: {batch['hm'].shape}")
+    # out_resnet = outputs[1]
+    # outputs = outputs[0]
     
     for s in range(opt.num_stacks):
-      print(f"s: {s}")
       output = outputs[s]
       
-      # output_hm = output['hm'][0].detach().cpu().numpy()
-      # output_hm = output_hm.transpose(1, 2, 0)
-      # print(f"output_hm_64,64: {output_hm[64][64]}")
-      # print(f"output_hm_65,65: {output_hm[65][65]}")
-      # plt.imshow(output_hm, cmap="gray")
-      # plt.axis('off') 
-      # plt.show()
       
       if not opt.mse_loss:
         output['hm'] = _sigmoid(output['hm'])
@@ -54,26 +51,92 @@ class CtdetGazeLoss(torch.nn.Module):
           batch['reg'].detach().cpu().numpy(), 
           batch['ind'].detach().cpu().numpy(), 
           output['reg'].shape[3], output['reg'].shape[2])).to(opt.device)
-
-      # output_hm_sig = _sigmoid(output['hm'][0])
-      # print(f"output_hm_sig: {output_hm_sig.shape}")
-      # output_hm_sig = output_hm_sig.permute(1, 2, 0)
-      # output_hm_sig = output_hm_sig.detach().cpu().numpy()
-      # print(f"output_hm_sig_64,64: {output_hm_sig[64][64]}")
-      # print(f"output_hm_sig_65,65: {output_hm_sig[65][65]}")
       
-      # batch_hm = batch["hm"][0].detach().cpu().numpy()
-      # print(f"batch_hm: {batch_hm.shape}")
-      # # batch_hm = batch_hm.transpose(1,2,0)
-      # batch_hm = batch_hm.transpose(1, 2, 0)
-
-      # # plt.imshow(output_hm_sig, cmap="gray")
-      # # plt.axis('off')  
-      # # plt.show()
+      output_hm = output['hm'][0].detach().cpu().numpy()
+      output_hm = output_hm.transpose(1, 2, 0)
       
+      image_folder = "/home/owenserver/Python/CenterNet_gaze/hm_image"
+      if not os.path.exists(image_folder):
+        os.makedirs(image_folder)
+
+      current_time = datetime.now()
+      # 格式化時間為指定的字串格式（例如：%Y%m%d_%H%M%S）
+      time_str = current_time.strftime("%Y%m%d_%H%M%S")
+      # 構造文件名
+      filename_hm = f"{time_str}_hm.jpg"
+      
+      save_output_hm_path = os.path.join(image_folder,filename_hm)
+      plt.imsave(save_output_hm_path, output_hm.squeeze(), cmap='gray')
+
+      # fig_output_hm, ax_output_hm = plt.subplots(figsize=[5,5])
+      # im_output_hm = ax_output_hm.imshow(output_hm,
+      #     origin='lower',
+      #     cmap='hot', 
+      #     )
+      
+      # fig_output_hm.colorbar(im_output_hm)
+      # plt.axis('off') 
+      # plt.savefig(save_output_hm_path)
+      # plt.show()
+      
+      # plt.imshow(output_hm, cmap="gray")
+      # plt.axis('off')  
+      # plt.show()
+      
+      
+      
+      batch_hm = batch["hm"][0].detach().cpu().numpy()
+      batch_hm = batch_hm.transpose(1, 2, 0)
+      
+      filename_gt = f"{time_str}_gt.jpg"
+      
+      save_gt_hm_path = os.path.join(image_folder,filename_gt)
+      plt.imsave(save_gt_hm_path, batch_hm.squeeze(), cmap='gray')
+      
+      # fig_gt_hm, ax_gt_hm = plt.subplots(figsize=[5,5])
+      # im_gt_hm = ax_gt_hm.imshow(batch_hm,
+      #     origin='lower',
+      #     cmap='hot', 
+      #     )
+      # 
+      # fig_gt_hm.colorbar(im_gt_hm)
+      # plt.axis('off') 
+      # plt.savefig(save_gt_hm_path)
+      # plt.show()
+
       # plt.imshow(batch_hm, cmap="gray")
       # plt.axis('off')  
       # plt.show()
+      
+      
+      
+      
+      
+      
+      output_hw = opt.input_res // opt.down_ratio
+      over_hm = np.zeros((output_hw, output_hw, 3), dtype=np.float32)
+      
+      output_hm_norm = (output_hm-np.min(output_hm))/(np.max(output_hm)-np.min(output_hm))
+      
+
+      
+      batch_hm_norm = (batch_hm-np.min(batch_hm))/(np.max(batch_hm)-np.min(batch_hm))
+      
+      over_hm[:,:,0] = np.squeeze(batch_hm_norm)
+      over_hm[:,:,2] = np.squeeze(output_hm_norm)
+      over_hm[:,:,1] = np.squeeze((batch_hm_norm*0.5  + output_hm_norm*0.5))
+      
+      
+      # plt.imshow(over_hm)
+      # plt.axis('off')  
+      # plt.show()
+      
+      
+      # over_hm = batch_hm + output_hm
+      filename_over = f"{time_str}_over.jpg"
+      
+      save_over_path = os.path.join(image_folder,filename_over)
+      plt.imsave(save_over_path, over_hm.squeeze(), cmap='gray')
 
       hm_loss += self.crit(output['hm'], batch['hm']) / opt.num_stacks
       # print(f"hm_loss: {hm_loss}")

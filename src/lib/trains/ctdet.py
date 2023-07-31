@@ -14,6 +14,11 @@ from utils.post_process import ctdet_post_process
 from utils.oracle_utils import gen_oracle_map
 from .base_trainer import BaseTrainer
 
+import matplotlib.pyplot as plt
+import os
+import cv2
+from datetime import datetime
+
 class CtdetLoss(torch.nn.Module):
   def __init__(self, opt):
     super(CtdetLoss, self).__init__()
@@ -45,6 +50,40 @@ class CtdetLoss(torch.nn.Module):
           batch['reg'].detach().cpu().numpy(), 
           batch['ind'].detach().cpu().numpy(), 
           output['reg'].shape[3], output['reg'].shape[2])).to(opt.device)
+        
+        
+        
+      output_hm = output['hm'][0].detach().cpu().numpy()
+      output_hm = output_hm.transpose(1, 2, 0)
+      
+      batch_hm = batch["hm"][0].detach().cpu().numpy()
+      # print(f"batch_hm: {batch_hm.shape}")
+      # batch_hm = batch_hm.transpose(1,2,0)
+      batch_hm = batch_hm.transpose(1, 2, 0)
+      
+      # # person 14
+      # plt.imshow(output_hm[:,:,14] , cmap="gray")
+      # plt.axis('off')  
+      # plt.show()
+      
+      # plt.imshow(output_hm[:,:,14] , cmap="gray")
+      # plt.axis('off')  
+      # plt.show()
+        
+        
+      image_folder = "/home/owenserver/Python/CenterNet_gaze/hm_image"
+      if not os.path.exists(image_folder):
+        os.makedirs(image_folder)
+
+      current_time = datetime.now()
+      # 格式化時間為指定的字串格式（例如：%Y%m%d_%H%M%S）
+      time_str = current_time.strftime("%Y%m%d_%H%M%S")
+      # 構造文件名
+      filename_hm = f"{time_str}_hm.jpg"
+      
+      save_hm_path = os.path.join(image_folder,filename_hm)
+      plt.imsave(save_hm_path, output_hm[:,:,14].squeeze(), cmap='gray')
+      
 
       hm_loss += self.crit(output['hm'], batch['hm']) / opt.num_stacks
       if opt.wh_weight > 0:

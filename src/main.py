@@ -47,7 +47,7 @@ def main(opt):
   
   print('*****************')
   
-  for i in range(1):
+  for i in range(5):
     index = i
 
     dataset_test = Dataset(opt, 'train')
@@ -135,6 +135,11 @@ def main(opt):
       save_model(os.path.join(opt.save_dir, 'model_last.pth'), 
                  epoch, model, optimizer)
     logger.write('\n')
+    if epoch % 10 == 0:
+      # every 10 epoch will save model weights
+      save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(epoch)), 
+                 epoch, model, optimizer)
+    
     if epoch in opt.lr_step:
       save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(epoch)), 
                  epoch, model, optimizer)
