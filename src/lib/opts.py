@@ -58,7 +58,7 @@ class opts(object):
                              choices=['white', 'black'])
     
     # model
-    self.parser.add_argument('--arch', default='res_18', 
+    self.parser.add_argument('--arch', default='resdcn_18', 
                              help='model architecture. Currently tested'
                                   'res_18 | res_101 | resdcn_18 | resdcn_101 |'
                                   'dlav0_34 | dla_34 | hourglass')
@@ -80,13 +80,22 @@ class opts(object):
                              help='input width. -1 for default from dataset.')
     
     # vp_size
-    self.parser.add_argument('--vp_h', type=int, default=1600, 
+    self.parser.add_argument('--vp_h', type=int, default=2100, 
                              help='virtual plane height.')
-    self.parser.add_argument('--vp_w', type=int, default=2560, 
+    self.parser.add_argument('--vp_w', type=int, default=3360, 
                              help='virtual plane width.')
-    # vp_size
+    
+    # vp_heatmap_radius
     self.parser.add_argument('--vp_heatmap_hw', type=int, default=20, 
                              help='virtual plane height.')
+    
+    # resize raw image
+    self.parser.add_argument('--resize_raw_image', action='store_true',
+                          help='resize_raw_image')
+    self.parser.add_argument('--resize_raw_image_h', type=int, default=360, 
+                          help='resize raw image height.')
+    self.parser.add_argument('--resize_raw_image_w', type=int, default=640, 
+                          help='resize raw image width.')
     
     # train
     self.parser.add_argument('--lr', type=float, default=2.5e-4, 
@@ -95,13 +104,13 @@ class opts(object):
                              help='drop learning rate by 10.')
     self.parser.add_argument('--num_epochs', type=int, default=140,
                              help='total training epochs.')
-    self.parser.add_argument('--batch_size', type=int, default=80,
+    self.parser.add_argument('--batch_size', type=int, default=108,
                              help='batch size')
     self.parser.add_argument('--master_batch_size', type=int, default=-1,
                              help='batch size on the master gpu.')
     self.parser.add_argument('--num_iters', type=int, default=-1,
                              help='default: #samples / batch_size.')
-    self.parser.add_argument('--val_intervals', type=int, default=-1,
+    self.parser.add_argument('--val_intervals', type=int, default=10,
                              help='number of epochs to run validation.')
     self.parser.add_argument('--trainval', action='store_true',
                              help='include validation in training and '
@@ -114,7 +123,7 @@ class opts(object):
                              help='multi scale test augmentation.')
     self.parser.add_argument('--nms', action='store_true',
                              help='run nms in testing.')
-    self.parser.add_argument('--K', type=int, default=2,
+    self.parser.add_argument('--K', type=int, default=1,
                              help='max number of output objects.') 
     self.parser.add_argument('--not_prefetch_test', action='store_true',
                              help='not use parallal data pre-processing.')
@@ -170,6 +179,10 @@ class opts(object):
                              help='loss weight for keypoint local offsets.')
     self.parser.add_argument('--wh_weight', type=float, default=0.1,
                              help='loss weight for bounding box size.')
+    # ctdet_gaze
+    self.parser.add_argument('--pog_weight', type=float, default=0.0001,
+                          help='loss weight for PoG.')
+    
     # multi_pose
     self.parser.add_argument('--hp_weight', type=float, default=1,
                              help='loss weight for human pose offset.')
@@ -198,6 +211,17 @@ class opts(object):
     # ctdet_gaze
     self.parser.add_argument('--not_face_grid', action='store_true',
                           help='not face grid.')
+    self.parser.add_argument('--camera_screen_pos', action='store_true',
+                      help='camera related screen position.')
+    self.parser.add_argument('--pog_offset', action='store_true',
+                             help='pog offset.')
+    self.parser.add_argument('--heat_map_debug', action='store_false',
+                          help='pog offset.')
+    self.parser.add_argument('--data_person_id', type=int, default=1,
+                          help='data_person_id') 
+    
+    # self.parser.add_argument('--pog_offset_start_epoch', type=int, default=10,
+    #                       help='the epoch to enable pog_offset.')
     
     # exdet
     self.parser.add_argument('--agnostic_ex', action='store_true',

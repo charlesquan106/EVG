@@ -33,9 +33,14 @@ class CTDet_gazeDataset(data.Dataset):
     # print(num_objs)
   
     img = cv2.imread(img_path)
-    
+    if self.opt.resize_raw_image:
+      img = cv2.resize(img, (self.opt.resize_raw_image_w, self.opt.resize_raw_image_h), interpolation=cv2.INTER_LINEAR)
     img_height, img_width = img.shape[0], img.shape[1]
     input_h, input_w = self.opt.input_h, self.opt.input_w
+    # print(img_height)
+    # print(img_width)
+    # print(input_h)
+    # print(input_w)
 
     c = np.array([img.shape[1] / 2., img.shape[0] / 2.], dtype=np.float32)
     if self.opt.keep_res:
@@ -45,6 +50,9 @@ class CTDet_gazeDataset(data.Dataset):
     else:
       s = max(img_width, img_height) * 1.0
       input_h, input_w = self.opt.input_h, self.opt.input_w
+    # print(self.opt.keep_res)
+    # print(self.opt.pad)
+    # print(f"input_w, input_h: {input_w}, {input_h}")
 
    
     
@@ -89,45 +97,78 @@ class CTDet_gazeDataset(data.Dataset):
       ann = anns[k]
       
       _,unit_pixel = ann["screenSize"]
-      
       unit_pixel = eval(unit_pixel)
       sc_width, sc_height = unit_pixel  
       # print("screenSize unit_pixel",f'{sc_height}, {sc_width}')
-      sc = np.ones((1, sc_width, sc_height), dtype=np.float32)
+      # sc = np.ones((1, sc_width, sc_height), dtype=np.float32)
      
       vp_width, vp_height = self.opt.vp_w, self.opt.vp_h
-      vp = np.zeros((1, vp_width, vp_height), dtype=np.float32)
+      # vp = np.zeros((1, vp_width, vp_height), dtype=np.float32)
+      vp = np.zeros((vp_height, vp_width , 1), dtype=np.float32)
       vp = vp.transpose(1,2,0)
       
       
       x,y = ann['gazepoint']
       # print("gazepoint",f'{x} {y}')
+      # print("sc_size ",f'{sc_width} {sc_height}')
       if flipped:
         x = sc_width - x - 1
       
       ann_id = ann['id']
       # print(f"id: {ann_id}")
       sc_gazepoint = np.array([x,y],dtype=np.int64)
-      sc[0, sc_gazepoint[0], sc_gazepoint[1]] = 20
-      sc = sc.transpose(1,2,0)
+      # ****---------******
+      # sc[0, sc_gazepoint[0], sc_gazepoint[1]] = 20
+      # sc = sc.transpose(1,2,0)
       
       
-      # ---- sc put into vp-------#
-      large_shape = vp.shape
-      small_shape = sc.shape
+      # # ---- sc put into vp-------#
+      # large_shape = vp.shape
+      # small_shape = sc.shape
 
-      large_mid = [s // 2 for s in large_shape]
-      small_mid = [s // 2 for s in small_shape]
-      offsets = [large_mid[i] - small_mid[i] for i in range(len(large_shape))]
-      vp[offsets[0]:offsets[0] + small_shape[0], offsets[1]:offsets[1] + small_shape[1]] += sc
-
-      # vp = vp.transpose(2,0,1)
-      # print(f"vp_with_sc: {vp.shape[0]},{vp.shape[1]}")
+      # large_mid = [s // 2 for s in large_shape]
+      # small_mid = [s // 2 for s in small_shape]
+      # offsets = [large_mid[i] - small_mid[i] for i in range(len(large_shape))]
       
-      vp_gazepoint_idx = np.where(vp == 20)
-      # print(vp_gazepoint_idx)
       
-      vp_gazepoint = np.array([vp_gazepoint_idx[0],vp_gazepoint_idx[1]])
+      # # camera_screen_pos = self.opt.camera_screen_pos
+      # camera_screen_pos = 1
+      # print("before vp")
+      # # print(camera_screen_pos)
+      # if camera_screen_pos:
+      #   per_sc_height_mm = sc_height / sc_height_mm
+      #   # [0]-> width , [1]-> height
+      #   # camera_screen_offset = int(per_sc_height_mm * (sc_height_mm /2))
+      #   camera_screen_offset = int(sc_height/2)
+      #   print(f"sc_height/width: {sc_height},{sc_width}")
+      #   print(f"camera_screen_offset: {camera_screen_offset}")
+      #   vp[offsets[0]:offsets[0] + small_shape[0], offsets[1]:offsets[1] + small_shape[1]] += sc
+      #   # print(f"offsets[1] + small_shape[1]+camera_screen_offset: {offsets[1] + small_shape[1]+camera_screen_offset}")
+      #   print(f"offsets[1] + small_shape[1]+camera_screen_offset: {offsets[1] + small_shape[1]}")
+      #   # vp[offsets[0]:offsets[0] + small_shape[0], offsets[1]+camera_screen_offset:offsets[1] + small_shape[1]+camera_screen_offset] += sc
+      # else: 
+      #   vp[offsets[0]:offsets[0] + small_shape[0], offsets[1]:offsets[1] + small_shape[1]] += sc
+      
+      # # print(f"vp: {vp.shape[0]},{vp.shape[1]}")
+      # # vp = vp.transpose(2,0,1)
+      # # print(f"vp_with_sc: {vp.shape[0]},{vp.shape[1]}")
+      
+      # vp_gazepoint_idx = np.where(vp == 20)
+      # print(f"vp_gazepoint_idx = {vp_gazepoint_idx}")
+      
+      # vp_gazepoint = np.array([vp_gazepoint_idx[0],vp_gazepoint_idx[1]])
+      # ****---------******
+      
+      # **************
+      
+      if self.opt.camera_screen_pos:
+        camera_screen_offset = sc_height/2
+      else:
+        camera_screen_offset = 0
+        # print(f"sc_gazepoint: {sc_gazepoint}")
+      vp_gazepoint = [(vp_width-sc_width)/2+sc_gazepoint[0] ,(vp_height-sc_height)/2+sc_gazepoint[1]+camera_screen_offset]
+        # print(f"vp_gazepoint: {vp_gazepoint}")
+      # **************
 
       flipped = False
       if self.split == 'train':
@@ -137,26 +178,31 @@ class CTDet_gazeDataset(data.Dataset):
           vp = vp[:, ::-1, :].copy()
           
       vp_c = np.array([ vp_width / 2.0, vp_height/ 2.0], dtype=np.float32)
-      # print(f"vp_c: {vp_c}") 
       if self.opt.keep_res:
-        output_h = (vp_height | self.opt.pad) + 1
-        output_w = (vp_width | self.opt.pad) + 1
-        vp_s = np.array([output_w, output_h], dtype=np.float32)
+        # trans_output_h = (vp_height | self.opt.pad) + 1
+        # trans_output_w = (vp_width | self.opt.pad) + 1
+        # vp_s = np.array([trans_output_w, trans_output_h], dtype=np.float32)
+        trans_output_h = (vp_height | self.opt.pad) + 1
+        trans_output_w = (vp_width | self.opt.pad) + 1
+        vp_s = np.array([vp_width, vp_height], dtype=np.float32)
       else:
         vp_s = max(vp_width, vp_height) * 1.0
-      # print(f"vp_s: {vp_s}")
+    #   print(f"vp_s: {vp_s}")
+      
+      # print(f"output_w, output_h: {output_w}, {output_h}")
           
       trans_vp2out = get_affine_transform(vp_c, vp_s, 0, [output_w, output_h])
-      vp_trans_out = cv2.warpAffine(vp, trans_vp2out, 
-                        (output_w, output_h),
-                        flags=cv2.INTER_LINEAR)
+      # vp_trans_out = cv2.warpAffine(vp, trans_vp2out, 
+      #                   (output_w, output_h),
+      #                   flags=cv2.INTER_LINEAR)
 
       # print(f"vp_out: {vp_trans_out.shape[0]},{vp_trans_out.shape[1]}")
       
       
       cls_id = 0
-      # print(vp_gazepoint)
+    #   print(vp_gazepoint)
       vp_gazepoint_output = affine_transform(vp_gazepoint, trans_vp2out)
+      # print(vp_gazepoint_output)
       h, w = self.opt.vp_heatmap_hw, self.opt.vp_heatmap_hw
       if h > 0 and w > 0:
         radius = gaussian_radius((math.ceil(h), math.ceil(w)))
@@ -166,10 +212,15 @@ class CTDet_gazeDataset(data.Dataset):
         ct_int = ct.astype(np.int32)
         draw_gaussian(hm[cls_id], ct_int, radius)
         
-        hm_gazepoint_idx = np.where(hm[cls_id] == 20)
+        # hm_gazepoint_idx = np.where(hm[cls_id] == 20)
         # print(f"hm_gazepoint_idx: {hm_gazepoint_idx}")
         
-        ind[k] = ct_int[1] * output_w + ct_int[0]
+        # avoid exceess the max of ind which accroding to output_h*output_w 
+        if ct_int[1] >= output_h :
+          ind[k] = (output_h-1) * output_w + ct_int[0]
+        else:
+          ind[k] = ct_int[1] * output_w + ct_int[0]
+        # ind[k] = np.clip(ind[k],0,output_w*output_h)
         reg[k] = ct - ct_int
         reg_mask[k] = 1
         face_grid[k] = 1
@@ -193,7 +244,9 @@ class CTDet_gazeDataset(data.Dataset):
       ret.update({'reg': reg})
     if self.opt.face_grid:
       ret.update({'face_grid': face_grid})
-    if self.opt.debug > 0 or not self.split == 'train':
+    # if self.opt.debug > 0 or not self.split == 'train':
+    pog_loss = 1
+    if pog_loss:  
       gt_det = np.array(gt_det, dtype=np.float32) if len(gt_det) > 0 else \
                np.zeros((1, 4), dtype=np.float32)
       meta = {'c': c, 's': s,'vp_c': vp_c, 'vp_s': vp_s, 'gt_det': gt_det, 'img_id': img_id}

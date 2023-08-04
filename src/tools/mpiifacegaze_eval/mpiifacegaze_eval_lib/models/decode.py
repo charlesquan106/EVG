@@ -511,7 +511,7 @@ def ctdet_gaze_decode(heat, reg=None, K=100):
     if reg is not None:
         reg = _transpose_and_gather_feat(reg, inds)
         reg = reg.view(batch, K, 2)
-        print(f"reg: {reg}")
+        # print(f"reg: {reg}")
         xs = xs.view(batch, K, 1) + reg[:, :, 0:1]
         ys = ys.view(batch, K, 1) + reg[:, :, 1:2]
     else:

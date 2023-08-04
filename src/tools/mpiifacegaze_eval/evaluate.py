@@ -36,14 +36,15 @@ def test(model, test_loader, opt):
     
     model = model.to(device)
     
-    L2_errors = AverageMeter()
+    L2_pixel_errors = AverageMeter()
+    L2_mm_errors = AverageMeter()
     losses_gaze = AverageMeter()
 
     # predictions = []
     # gts = []
     with torch.no_grad():
         for iter_id, batch in enumerate(test_loader):
-            
+            print(f"Iteration {iter_id}/ {len(test_loader)}")
             
             for k in batch:
                 if k != 'meta':
@@ -59,6 +60,9 @@ def test(model, test_loader, opt):
             # plt.axis('off')  # 关闭坐标轴
             # plt.show()
 
+            mm_per_pixel = batch['meta']['mm_per_pixel']
+            mm_per_pixel = float(mm_per_pixel.detach().cpu().numpy())
+            # print("mm_per_pixel",f'{mm_per_pixel}')
             
             img_id = batch['meta']['img_id']
             # print(f"img_id : {img_id}")
@@ -161,9 +165,11 @@ def test(model, test_loader, opt):
             # hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],0] =15 
             # hm_over = output_hm + hm_over
             
-            output_hw = opt.input_res // opt.down_ratio
-            # print(f"output_hw: {output_hw}")
-            hm_over = np.zeros((output_hw, output_hw, 3), dtype=np.float32)
+            # output_hw = opt.input_res // opt.down_ratio
+            # # print(f"output_hw: {output_hw}")
+            # hm_over = np.zeros((output_hw, output_hw, 3), dtype=np.float32)
+            hm_over = np.zeros((batch_hm.shape[0],batch_hm.shape[1],3), dtype=np.float32)
+            
             dets_coord_int = dets_coord.astype(np.int32)
             dets_gt_coord_int = dets_gt_coord.astype(np.int32)
 
@@ -182,22 +188,26 @@ def test(model, test_loader, opt):
             
             
             
-            L2_error = L2_distance(dets_org_coord, dets_gt_org_coord)
-            L2_errors.update(L2_error)
+            L2_pixel_error = L2_distance(dets_org_coord, dets_gt_org_coord)
+            L2_pixel_errors.update(L2_pixel_error)
+            
+            L2_mm_error = L2_pixel_error*mm_per_pixel
+            L2_mm_errors.update(L2_mm_error)
             
             
-            # print(f"L2_error = {L2_error}")
+            print(f"L2_error = {L2_pixel_error} pixel, {L2_mm_error} mm")
             
-            # plt.title(f"error = {L2_error}")
+            # plt.title(f"piexl error = {L2_pixel_error}")
             # plt.imshow(hm_over, cmap="gray")
             # plt.axis('off')  # 关闭坐标轴
             # plt.show()
             # break
 
-    mean_L2_errors = L2_errors.avg
+    mean_L2_pixel_errors = L2_pixel_errors.avg
+    mean_L2_mm_errors = L2_mm_errors.avg
 
             
-    return mean_L2_errors
+    return mean_L2_pixel_errors,mean_L2_mm_errors
 
 
 def main(opt):
@@ -222,8 +232,11 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_256/logs_2023-07-09-17-49/model_45.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_one_person/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all/model_70.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_res18_512_ep70_all/model_70.pth"
-
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_res18_512_ep70_all/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_s_pos/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res_resize_s_pos/model_70.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res_resize_s_pos_l_pog/model_70.pth"
     model = load_model(model, model_path)
     # if opt.load_model != '':
     #     model, optimizer, start_epoch = load_model(
@@ -235,6 +248,13 @@ def main(opt):
     
 
     
+    # test_loader = torch.utils.data.DataLoader(
+    #   Dataset(opt, 'val'), 
+    #   batch_size=1, 
+    #   shuffle=False,
+    #   num_workers=1,
+    #   pin_memory=True
+    # )
     test_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'val'), 
       batch_size=1, 
@@ -260,12 +280,12 @@ def main(opt):
     # checkpoint = torch.load(config.test.checkpoint, map_location='cpu')
     # model.load_state_dict(checkpoint['model'])
     
-    test(model, test_loader, opt)
 
-    L2_distance = test(model, test_loader, opt)
+    L2_pixel_error,L2_mm_error = test(model, test_loader, opt)
     # print(L2_distance.shape)
 
-    print(f'The mean error distance (pixel): {L2_distance:.2f}')
+    print(f'The mean error distance (pixel): {L2_pixel_error:.2f}')
+    print(f'The mean error distance (mm): {L2_mm_error:.2f}')
 
     # output_path = output_dir / 'predictions.npy'
     # np.save(output_path, predictions.numpy())

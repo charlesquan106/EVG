@@ -47,7 +47,7 @@ def main(opt):
   
   print('*****************')
   
-  for i in range(5):
+  for i in range(2):
     index = i
 
     dataset_test = Dataset(opt, 'train')
@@ -58,6 +58,11 @@ def main(opt):
     # print(f"c = {smaple_c}")
     # print(f"s = {smaple_s}")
     
+    
+    # for k,v in sample.items() :
+      
+    #   key_shape = sample[k].shape
+    #   print(f"{k}:{key_shape}")
     sample_input = sample["input"]
     sample_input = sample_input.transpose(1,2,0)
     sample_hm = sample["hm"]

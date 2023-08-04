@@ -80,28 +80,37 @@ class opts(object):
                              help='input width. -1 for default from dataset.')
     
     # vp_size
-    self.parser.add_argument('--vp_h', type=int, default=1600, 
+    self.parser.add_argument('--vp_h', type=int, default=2100, 
                              help='virtual plane height.')
-    self.parser.add_argument('--vp_w', type=int, default=2560, 
+    self.parser.add_argument('--vp_w', type=int, default=3360, 
                              help='virtual plane width.')
-    # vp_size
-    self.parser.add_argument('--vp_heatmap_hw', type=int, default=2, 
+    
+    # vp_heatmap_radius
+    self.parser.add_argument('--vp_heatmap_hw', type=int, default=20, 
                              help='virtual plane height.')
     
+    # resize raw image
+    self.parser.add_argument('--resize_raw_image', action='store_true',
+                          help='resize_raw_image')
+    self.parser.add_argument('--resize_raw_image_h', type=int, default=360, 
+                          help='resize raw image height.')
+    self.parser.add_argument('--resize_raw_image_w', type=int, default=640, 
+                          help='resize raw image width.')
+    
     # train
-    self.parser.add_argument('--lr', type=float, default=1.25e-4, 
+    self.parser.add_argument('--lr', type=float, default=2.5e-4, 
                              help='learning rate for batch size 32.')
     self.parser.add_argument('--lr_step', type=str, default='90,120',
                              help='drop learning rate by 10.')
     self.parser.add_argument('--num_epochs', type=int, default=140,
                              help='total training epochs.')
-    self.parser.add_argument('--batch_size', type=int, default=32,
+    self.parser.add_argument('--batch_size', type=int, default=128,
                              help='batch size')
     self.parser.add_argument('--master_batch_size', type=int, default=-1,
                              help='batch size on the master gpu.')
     self.parser.add_argument('--num_iters', type=int, default=-1,
                              help='default: #samples / batch_size.')
-    self.parser.add_argument('--val_intervals', type=int, default=1,
+    self.parser.add_argument('--val_intervals', type=int, default=10,
                              help='number of epochs to run validation.')
     self.parser.add_argument('--trainval', action='store_true',
                              help='include validation in training and '
@@ -195,10 +204,11 @@ class opts(object):
                              help='category specific bounding box size.')
     self.parser.add_argument('--not_reg_offset', action='store_true',
                              help='not regress local offset.')
-    # store_false
     # ctdet_gaze
     self.parser.add_argument('--not_face_grid', action='store_true',
                           help='not face grid.')
+    self.parser.add_argument('--camera_screen_pos', action='store_true',
+                      help='camera related screen position.')
     
     # exdet
     self.parser.add_argument('--agnostic_ex', action='store_true',
@@ -339,8 +349,8 @@ class opts(object):
       opt.heads = {'hm': opt.num_classes}
       if opt.reg_offset:
         opt.heads.update({'reg': 2})
-      # if opt.face_grid:
-      #   opt.heads.update({'face_grid': 2})
+      if opt.face_grid:
+        opt.heads.update({'face_grid': 2})
     elif opt.task == 'multi_pose':
       # assert opt.dataset in ['coco_hp']
       opt.flip_idx = dataset.flip_idx
