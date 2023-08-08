@@ -209,6 +209,8 @@ class opts(object):
                           help='not face grid.')
     self.parser.add_argument('--camera_screen_pos', action='store_true',
                       help='camera related screen position.')
+    self.parser.add_argument('--data_person_id', type=int, default=1,
+                      help='data_person_id')
     
     # exdet
     self.parser.add_argument('--agnostic_ex', action='store_true',

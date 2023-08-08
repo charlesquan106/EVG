@@ -236,7 +236,11 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_s_pos/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res_resize_s_pos/model_70.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res_resize_s_pos_l_pog/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res_resize_s_pos_l_pog/model_70.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline/gaze_resdcn18_ep70_all_test_p06/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_test_p14/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res_resize_s_pos_l_pog_0001/model_90.pth"
+        
     model = load_model(model, model_path)
     # if opt.load_model != '':
     #     model, optimizer, start_epoch = load_model(

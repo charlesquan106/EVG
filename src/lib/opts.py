@@ -80,9 +80,9 @@ class opts(object):
                              help='input width. -1 for default from dataset.')
     
     # vp_size
-    self.parser.add_argument('--vp_h', type=int, default=2100, 
+    self.parser.add_argument('--vp_h', type=int, default=1600, 
                              help='virtual plane height.')
-    self.parser.add_argument('--vp_w', type=int, default=3360, 
+    self.parser.add_argument('--vp_w', type=int, default=2560, 
                              help='virtual plane width.')
     
     # vp_heatmap_radius
@@ -180,7 +180,7 @@ class opts(object):
     self.parser.add_argument('--wh_weight', type=float, default=0.1,
                              help='loss weight for bounding box size.')
     # ctdet_gaze
-    self.parser.add_argument('--pog_weight', type=float, default=0.0001,
+    self.parser.add_argument('--pog_weight', type=float, default=0,
                           help='loss weight for PoG.')
     
     # multi_pose
@@ -217,7 +217,7 @@ class opts(object):
                              help='pog offset.')
     self.parser.add_argument('--heat_map_debug', action='store_false',
                           help='pog offset.')
-    self.parser.add_argument('--data_person_id', type=int, default=1,
+    self.parser.add_argument('--data_person_id', type=int, default=4,
                           help='data_person_id') 
     
     # self.parser.add_argument('--pog_offset_start_epoch', type=int, default=10,

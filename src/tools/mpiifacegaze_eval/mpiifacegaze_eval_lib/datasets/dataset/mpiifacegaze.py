@@ -27,7 +27,8 @@ class MpiiFaceGaze(data.Dataset):
     super(MpiiFaceGaze, self).__init__()
     self.data_dir = os.path.join(opt.data_dir, 'gaze_ct')
     self.img_dir = os.path.join(self.data_dir, 'images')
-    _ann_name = {'train': 'train', 'val': 'test'}
+    # _ann_name = {'train': 'train', 'val': 'test'}
+    _ann_name = {'train': f'train_p{opt.data_person_id:02}', 'val': f'test_p{opt.data_person_id:02}'}
     self.annot_path = os.path.join(
       self.data_dir, 'annotations', 
       'gaze_{}.json').format(_ann_name[split])
