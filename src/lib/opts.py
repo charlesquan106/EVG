@@ -80,9 +80,9 @@ class opts(object):
                              help='input width. -1 for default from dataset.')
     
     # vp_size
-    self.parser.add_argument('--vp_h', type=int, default=1600, 
+    self.parser.add_argument('--vp_h', type=int, default=2100, 
                              help='virtual plane height.')
-    self.parser.add_argument('--vp_w', type=int, default=2560, 
+    self.parser.add_argument('--vp_w', type=int, default=3360, 
                              help='virtual plane width.')
     
     # vp_heatmap_radius
@@ -217,8 +217,10 @@ class opts(object):
                              help='pog offset.')
     self.parser.add_argument('--heat_map_debug', action='store_false',
                           help='pog offset.')
-    self.parser.add_argument('--data_person_id', type=int, default=4,
-                          help='data_person_id') 
+    self.parser.add_argument('--data_train_person_id', type=int, default=4,
+                      help='data_train_person_id')
+    self.parser.add_argument('--data_test_person_id', type=int, default=4,
+                  help='data_test_person_id') 
     
     # self.parser.add_argument('--pog_offset_start_epoch', type=int, default=10,
     #                       help='the epoch to enable pog_offset.')

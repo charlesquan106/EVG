@@ -237,10 +237,15 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res_resize_s_pos/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res_resize_s_pos_l_pog/model_70.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline/gaze_resdcn18_ep70_all_test_p06/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline/gaze_resdcn18_ep70_all_test_p04/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp/gaze_resdcn18_csp_p05/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/kr_resize/gaze_resdcn18_kr_resize_p05/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp_kr_resize/gaze_resdcn18_csp_kr_resize_p05/model_70.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp_kr_resize_pl/pl01/gaze_resdcn18_csp_kr_resize_pl01_p12/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_test_p14/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res_resize_s_pos_l_pog_0001/model_90.pth"
-        
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp_kr_resize_pl/pl001/gaze_resdcn18_ep70_all_keep_res_resize_s_pos_l_pog_0001/model_90.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/vp_s/gaze_resdcn18_test_vp_s_p04/model_70.pth"
+
     model = load_model(model, model_path)
     # if opt.load_model != '':
     #     model, optimizer, start_epoch = load_model(
