@@ -96,11 +96,21 @@ class CTDet_gazeDataset(data.Dataset):
     for k in range(num_objs):
       ann = anns[k]
       
-      _,unit_pixel = ann["screenSize"]
+      unit_mm,unit_pixel = ann["screenSize"]
+      unit_mm = eval(unit_mm)
+      raw_sc_width_mm, raw_sc_height_mm = unit_mm  
+      
       unit_pixel = eval(unit_pixel)
-      sc_width, sc_height = unit_pixel  
+      raw_sc_width, raw_sc_height = unit_pixel  
       # print("screenSize unit_pixel",f'{sc_height}, {sc_width}')
       # sc = np.ones((1, sc_width, sc_height), dtype=np.float32)
+      
+      # print("file_name",f'{file_name}')
+      # print("unit_mm",f'{sc_width_mm} {sc_height_mm}')
+      
+      # 5 pixel/mm  norm_screen_plane
+      sc_height = int(raw_sc_height_mm * 5)
+      sc_width = int(raw_sc_width_mm * 5)
      
       vp_width, vp_height = self.opt.vp_w, self.opt.vp_h
       # vp = np.zeros((1, vp_width, vp_height), dtype=np.float32)
@@ -108,7 +118,14 @@ class CTDet_gazeDataset(data.Dataset):
       vp = vp.transpose(1,2,0)
       
       
-      x,y = ann['gazepoint']
+      
+      
+      raw_x,raw_y = ann['gazepoint']
+      x = int((raw_x / raw_sc_width) * sc_width)
+      y = int((raw_y / raw_sc_height) * sc_height)
+      # print("raw gazepoint",f'{raw_x} {raw_y}')
+      # print("raw sc_size ",f'{raw_sc_width} {raw_sc_height}')
+      
       # print("gazepoint",f'{x} {y}')
       # print("sc_size ",f'{sc_width} {sc_height}')
       if flipped:
@@ -117,57 +134,15 @@ class CTDet_gazeDataset(data.Dataset):
       ann_id = ann['id']
       # print(f"id: {ann_id}")
       sc_gazepoint = np.array([x,y],dtype=np.int64)
-      # ****---------******
-      # sc[0, sc_gazepoint[0], sc_gazepoint[1]] = 20
-      # sc = sc.transpose(1,2,0)
-      
-      
-      # # ---- sc put into vp-------#
-      # large_shape = vp.shape
-      # small_shape = sc.shape
 
-      # large_mid = [s // 2 for s in large_shape]
-      # small_mid = [s // 2 for s in small_shape]
-      # offsets = [large_mid[i] - small_mid[i] for i in range(len(large_shape))]
-      
-      
-      # # camera_screen_pos = self.opt.camera_screen_pos
-      # camera_screen_pos = 1
-      # print("before vp")
-      # # print(camera_screen_pos)
-      # if camera_screen_pos:
-      #   per_sc_height_mm = sc_height / sc_height_mm
-      #   # [0]-> width , [1]-> height
-      #   # camera_screen_offset = int(per_sc_height_mm * (sc_height_mm /2))
-      #   camera_screen_offset = int(sc_height/2)
-      #   print(f"sc_height/width: {sc_height},{sc_width}")
-      #   print(f"camera_screen_offset: {camera_screen_offset}")
-      #   vp[offsets[0]:offsets[0] + small_shape[0], offsets[1]:offsets[1] + small_shape[1]] += sc
-      #   # print(f"offsets[1] + small_shape[1]+camera_screen_offset: {offsets[1] + small_shape[1]+camera_screen_offset}")
-      #   print(f"offsets[1] + small_shape[1]+camera_screen_offset: {offsets[1] + small_shape[1]}")
-      #   # vp[offsets[0]:offsets[0] + small_shape[0], offsets[1]+camera_screen_offset:offsets[1] + small_shape[1]+camera_screen_offset] += sc
-      # else: 
-      #   vp[offsets[0]:offsets[0] + small_shape[0], offsets[1]:offsets[1] + small_shape[1]] += sc
-      
-      # # print(f"vp: {vp.shape[0]},{vp.shape[1]}")
-      # # vp = vp.transpose(2,0,1)
-      # # print(f"vp_with_sc: {vp.shape[0]},{vp.shape[1]}")
-      
-      # vp_gazepoint_idx = np.where(vp == 20)
-      # print(f"vp_gazepoint_idx = {vp_gazepoint_idx}")
-      
-      # vp_gazepoint = np.array([vp_gazepoint_idx[0],vp_gazepoint_idx[1]])
-      # ****---------******
-      
-      # **************
-      
       if self.opt.camera_screen_pos:
         camera_screen_offset = sc_height/2
       else:
         camera_screen_offset = 0
         # print(f"sc_gazepoint: {sc_gazepoint}")
-      vp_gazepoint = [(vp_width-sc_width)/2+sc_gazepoint[0] ,(vp_height-sc_height)/2+sc_gazepoint[1]+camera_screen_offset]
-        # print(f"vp_gazepoint: {vp_gazepoint}")
+      # vp_gazepoint = [(vp_width-sc_width)/2+sc_gazepoint[0] ,(vp_height-sc_height)/2+sc_gazepoint[1]+camera_screen_offset]
+      vp_gazepoint = [(vp_width/2)+(sc_gazepoint[0]-(sc_width/2)) ,(vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_offset]
+      # print(f"vp_gazepoint: {vp_gazepoint}")
       # **************
 
       flipped = False
