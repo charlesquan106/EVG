@@ -154,7 +154,7 @@ class CTDet_gazeDataset(data.Dataset):
         # print(f"sc_gazepoint: {sc_gazepoint}")
       # vp_gazepoint = [(vp_width-sc_width)/2+sc_gazepoint[0] ,(vp_height-sc_height)/2+sc_gazepoint[1]+camera_screen_offset]
       vp_gazepoint = [(vp_width/2)+(sc_gazepoint[0]-(sc_width/2)) ,(vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_offset]
-      # print(f"vp_gazepoint: {vp_gazepoint}")
+      print(f"vp_gazepoint: {vp_gazepoint}")
       # **************
 
       flipped = False
