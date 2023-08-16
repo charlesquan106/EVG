@@ -99,12 +99,27 @@ def main(opt):
     _, preds = trainer.val(0, val_loader)
     val_loader.dataset.run_eval(preds, opt.save_dir)
     return
+  print("**********start check **********")
+  ##### exclude_index_list  #####
+  def should_exclude(idx,item):
+    print(f"index: {idx}")
+    vp_gazepoint_x, vp_gazepoint_y = item['meta']['vp_gazepoint']
 
+    return vp_gazepoint_x > opt.vp_w or vp_gazepoint_x < 0 or vp_gazepoint_y > opt.vp_h or vp_gazepoint_y < 0
+  
+  exclude_index_list = [idx for idx, item in enumerate(Dataset(opt, 'train')) if should_exclude(idx,item)]
+  print("**********vp_gazepoint over virtual plane range need exclude**********")
+  print(f"exclude_index_list: {exclude_index_list}")
+  print(f"exclude_index_list len: {len(exclude_index_list)}")
+  exclude_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'train'))) if idx not in exclude_index_list])
+  #####    #####       #####
+  
   
   train_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'train'), 
       batch_size=opt.batch_size, 
-      shuffle=True,
+      shuffle=False,
+      sampler=exclude_sampler,
       num_workers=opt.num_workers,
       pin_memory=True,
       drop_last=True
@@ -112,7 +127,7 @@ def main(opt):
 
   print('Starting training...')
   best = 1e10
-  print(opt.batch_size)
+  print(f"batch_size: {opt.batch_size}")
   
   # for batch in enumerate(train_loader):
   #   pass

@@ -89,23 +89,49 @@ class CTDet_gazeDataset(data.Dataset):
       ann = anns[k]
       
       unit_mm,unit_pixel = ann["screenSize"]
-      
       unit_mm = eval(unit_mm)
-      sc_width_mm, sc_height_mm = unit_mm 
+      raw_sc_width_mm, raw_sc_height_mm = unit_mm  
+      
       unit_pixel = eval(unit_pixel)
-      sc_width, sc_height = unit_pixel  
-      mm_per_pixel = sc_width_mm/sc_width
-      # print("mm_per_pixel",f'{mm_per_pixel}')
+      raw_sc_width, raw_sc_height = unit_pixel  
+      
+      
       # print("screenSize unit_pixel",f'{sc_height}, {sc_width}')
-      sc = np.ones((1, sc_width, sc_height), dtype=np.float32)
+      # sc = np.ones((1, sc_width, sc_height), dtype=np.float32)
+      
+      # print("file_name",f'{file_name}')
+      # print("unit_mm",f'{sc_width_mm} {sc_height_mm}')
+      
+      mm_per_pixel= raw_sc_width_mm/raw_sc_width
+      # 5 pixel/mm  norm_screen_plane
+      # mm_per_pixel = 0.2
+      if self.opt.vp_pixel_per_mm > 0 :
+        sc_height = int(raw_sc_height_mm * self.opt.vp_pixel_per_mm)
+        sc_width = int(raw_sc_width_mm * self.opt.vp_pixel_per_mm)
+      else:
+        sc_height = raw_sc_height
+        sc_width = raw_sc_width
      
       vp_width, vp_height = self.opt.vp_w, self.opt.vp_h
-      vp = np.zeros((1, vp_width, vp_height), dtype=np.float32)
+      # vp = np.zeros((1, vp_width, vp_height), dtype=np.float32)
+      vp = np.zeros((vp_height, vp_width , 1), dtype=np.float32)
       vp = vp.transpose(1,2,0)
       
       
-      x,y = ann['gazepoint']
+      
+      
+      raw_x,raw_y = ann['gazepoint']
+      if self.opt.vp_pixel_per_mm > 0 :
+        x = int((raw_x / raw_sc_width) * sc_width)
+        y = int((raw_y / raw_sc_height) * sc_height)
+      else:
+        x = raw_x
+        y = raw_y
+      # print("raw gazepoint",f'{raw_x} {raw_y}')
+      # print("raw sc_size ",f'{raw_sc_width} {raw_sc_height}')
+      
       # print("gazepoint",f'{x} {y}')
+      # print("sc_size ",f'{sc_width} {sc_height}')
       if flipped:
         x = sc_width - x - 1
       
@@ -118,8 +144,9 @@ class CTDet_gazeDataset(data.Dataset):
       else:
         camera_screen_offset = 0
         # print(f"sc_gazepoint: {sc_gazepoint}")
-      vp_gazepoint = [(vp_width-sc_width)/2+sc_gazepoint[0] ,(vp_height-sc_height)/2+sc_gazepoint[1]+camera_screen_offset]
-        # print(f"vp_gazepoint: {vp_gazepoint}")
+      vp_gazepoint = [(vp_width-sc_width)/2 + sc_gazepoint[0] ,(vp_height-sc_height)/2 + sc_gazepoint[1] +camera_screen_offset]
+      # vp_gazepoint = [(vp_width/2)+(sc_gazepoint[0]-(sc_width/2)) ,(vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_offset]
+      # print(f"vp_gazepoint: {vp_gazepoint}")
       # **************
   
       flipped = False
@@ -150,9 +177,9 @@ class CTDet_gazeDataset(data.Dataset):
       # print(f"output_wh {output_w} {output_w}")
       trans_vp2out = get_affine_transform(vp_c, vp_s, 0, [output_w, output_h])
       # print(f"trans_vp2out - trans : {trans_vp2out}")
-      vp_trans_out = cv2.warpAffine(vp, trans_vp2out, 
-                        (output_w, output_h),
-                        flags=cv2.INTER_LINEAR)
+      # vp_trans_out = cv2.warpAffine(vp, trans_vp2out, 
+      #                   (output_w, output_h),
+      #                   flags=cv2.INTER_LINEAR)
 
       # print(f"vp_out: {vp_trans_out.shape[0]},{vp_trans_out.shape[1]}")
       
@@ -205,6 +232,6 @@ class CTDet_gazeDataset(data.Dataset):
       gt_det = np.array(gt_det, dtype=np.float32) if len(gt_det) > 0 else \
                np.zeros((1, 4), dtype=np.float32)
       meta = {'c': c, 's': s,'vp_c': vp_c, 'vp_s': vp_s, 'gt_det': gt_det, 'img_id': img_id, "vp_gazepoint": vp_gazepoint,\
-        "mm_per_pixel": mm_per_pixel}
+        "mm_per_pixel": mm_per_pixel,"file_name":file_name}
       ret['meta'] = meta
     return ret

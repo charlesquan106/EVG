@@ -80,10 +80,13 @@ class opts(object):
                              help='input width. -1 for default from dataset.')
     
     # vp_size
-    self.parser.add_argument('--vp_h', type=int, default=2100, 
+    self.parser.add_argument('--vp_h', type=int, default=1600, 
                              help='virtual plane height.')
-    self.parser.add_argument('--vp_w', type=int, default=3360, 
+    self.parser.add_argument('--vp_w', type=int, default=2560, 
                              help='virtual plane width.')
+    
+    self.parser.add_argument('--vp_pixel_per_mm', type=float, default = 0,
+                      help='define virtual plane per mm convert to pixel ')
     
     # vp_heatmap_radius
     self.parser.add_argument('--vp_heatmap_hw', type=int, default=20, 
