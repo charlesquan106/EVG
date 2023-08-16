@@ -85,6 +85,9 @@ class opts(object):
     self.parser.add_argument('--vp_w', type=int, default=3360, 
                              help='virtual plane width.')
     
+    self.parser.add_argument('--vp_pixel_per_mm', type=float, default = 0,
+                      help='define virtual plane per mm convert to pixel ')
+    
     # vp_heatmap_radius
     self.parser.add_argument('--vp_heatmap_hw', type=int, default=20, 
                              help='virtual plane height.')

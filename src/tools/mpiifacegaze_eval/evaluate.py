@@ -29,6 +29,21 @@ def L2_distance(pred, gt):
     return error
 
 
+def L2_distance_mm(pred, gt,mm_per_pixel):
+
+    x1, y1 = pred
+    x2, y2 = gt
+    
+    x1_mm = x1*mm_per_pixel
+    y1_mm = y1*mm_per_pixel
+    x2_mm = x2*mm_per_pixel
+    y2_mm = y2*mm_per_pixel
+    
+    error = euclidean_distance(x1_mm, y1_mm, x2_mm, y2_mm)
+    
+    return error
+
+
 def test(model, test_loader, opt):
     model.eval()
     torch.cuda.empty_cache()
@@ -116,14 +131,14 @@ def test(model, test_loader, opt):
                 batch['meta']['vp_s'].cpu().numpy(),
                 batch['hm'].shape[2], batch['hm'].shape[3], batch['hm'].shape[1])
 
-            for i in range(1):
-                cls_id = 1
-                # print(f"dets_gt_out: {dets_gt_out[i][cls_id][0][:2]}")
-                dets_gt_org_coord = dets_gt_out[i][cls_id][0][:2]
-                # print(f"dets_gt_org_coord: {dets_gt_org_coord}")
+            # for i in range(1):
+            #     cls_id = 1
+            #     # print(f"dets_gt_out: {dets_gt_out[i][cls_id][0][:2]}")
+            #     dets_gt_org_coord = dets_gt_out[i][cls_id][0][:2]
+            #     print(f"dets_gt_org_coord: {dets_gt_org_coord}")
                 
-            # vp_gazepoint = batch['meta']['vp_gazepoint'].cpu().numpy()
-            # print(f"vp_gazepoint : {vp_gazepoint}")
+            dets_gt_org_coord = batch['meta']['vp_gazepoint']
+            # print(f"vp_gazepoint : {dets_gt_org_coord}")
             
             #-------------- manual find heat map max ----------------
             output_hm = output['hm'][0].detach().cpu().numpy()
@@ -176,14 +191,16 @@ def test(model, test_loader, opt):
             # output_hm_min = np.min(output_hm)
             output_hm_norm = (output_hm-np.min(output_hm))/(np.max(output_hm)-np.min(output_hm))
 
-            for channel_i in range(3):
-                hm_over[:,:,channel_i] = np.squeeze(output_hm_norm)
-            hm_over[dets_coord_int[1],dets_coord_int[0],0] =0  
-            hm_over[dets_coord_int[1],dets_coord_int[0],1] =0  
-            hm_over[dets_coord_int[1],dets_coord_int[0],2] =1  # blue
-            hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],0] =1  # red
-            hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],1] =0  
-            hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],2] =0  
+            # for channel_i in range(3):
+            #     hm_over[:,:,channel_i] = np.squeeze(output_hm_norm)
+            # hm_over[dets_coord_int[1],dets_coord_int[0],0] =0  
+            # hm_over[dets_coord_int[1],dets_coord_int[0],1] =0  
+            # hm_over[dets_coord_int[1],dets_coord_int[0],2] =1  # blue
+            # file_name = batch['meta']['file_name']
+            # print(file_name)
+            # hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],0] =1  # red
+            # hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],1] =0  
+            # hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],2] =0  
 
             
             
@@ -191,8 +208,11 @@ def test(model, test_loader, opt):
             L2_pixel_error = L2_distance(dets_org_coord, dets_gt_org_coord)
             L2_pixel_errors.update(L2_pixel_error)
             
-            L2_mm_error = L2_pixel_error*mm_per_pixel
+            L2_mm_error = L2_distance_mm(dets_org_coord, dets_gt_org_coord,mm_per_pixel)
             L2_mm_errors.update(L2_mm_error)
+            
+            # L2_mm_error = L2_pixel_error*mm_per_pixel
+            # L2_mm_errors.update(L2_mm_error)
             
             
             print(f"L2_error = {L2_pixel_error} pixel, {L2_mm_error} mm")
@@ -241,11 +261,12 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp/gaze_resdcn18_csp_p05/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/kr_resize/gaze_resdcn18_kr_resize_p05/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp_kr_resize/gaze_resdcn18_csp_kr_resize_p05/model_70.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp_kr_resize_pl/pl01/gaze_resdcn18_csp_kr_resize_pl01_p12/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp_kr_resize_pl/pl01/gaze_resdcn18_csp_kr_resize_pl01_p12/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_test_p14/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp_kr_resize_pl/pl001/gaze_resdcn18_ep70_all_keep_res_resize_s_pos_l_pog_0001/model_90.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/vp_s/gaze_resdcn18_test_vp_s_p04/model_70.pth"
-
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/vp_s/gaze_resdcn18_test_vp_s_p05/model_70.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/sp_norm/gaze_resdcn18_ep70_sp_norm_p12/model_70.pth"
+    
     model = load_model(model, model_path)
     # if opt.load_model != '':
     #     model, optimizer, start_epoch = load_model(

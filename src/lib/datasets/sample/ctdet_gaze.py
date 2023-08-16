@@ -62,6 +62,8 @@ class CTDet_gazeDataset(data.Dataset):
       if np.random.random() < self.opt.flip:
         flipped = True
         img = img[:, ::-1, :].copy()
+      # flipped = True
+      # img = img[:, ::-1, :].copy()
         
     trans_input = get_affine_transform(c, s, 0, [input_w, input_h])
     inp = cv2.warpAffine(img, trans_input, 
@@ -109,8 +111,12 @@ class CTDet_gazeDataset(data.Dataset):
       # print("unit_mm",f'{sc_width_mm} {sc_height_mm}')
       
       # 5 pixel/mm  norm_screen_plane
-      sc_height = int(raw_sc_height_mm * 5)
-      sc_width = int(raw_sc_width_mm * 5)
+      if self.opt.vp_pixel_per_mm > 0 :
+        sc_height = int(raw_sc_height_mm * self.opt.vp_pixel_per_mm)
+        sc_width = int(raw_sc_width_mm * self.opt.vp_pixel_per_mm)
+      else:
+        sc_height = raw_sc_height
+        sc_width = raw_sc_width
      
       vp_width, vp_height = self.opt.vp_w, self.opt.vp_h
       # vp = np.zeros((1, vp_width, vp_height), dtype=np.float32)
@@ -121,9 +127,15 @@ class CTDet_gazeDataset(data.Dataset):
       
       
       raw_x,raw_y = ann['gazepoint']
-      x = int((raw_x / raw_sc_width) * sc_width)
-      y = int((raw_y / raw_sc_height) * sc_height)
-      # print("raw gazepoint",f'{raw_x} {raw_y}')
+      
+      # print(self.opt.vp_pixel_per_mm)
+      if self.opt.vp_pixel_per_mm > 0 :
+        x = int((raw_x / raw_sc_width) * sc_width)
+        y = int((raw_y / raw_sc_height) * sc_height)
+      else:
+        x = raw_x
+        y = raw_y
+      # print("raw gazepoint",f'{x} {y}')
       # print("raw sc_size ",f'{raw_sc_width} {raw_sc_height}')
       
       # print("gazepoint",f'{x} {y}')
@@ -142,7 +154,7 @@ class CTDet_gazeDataset(data.Dataset):
         # print(f"sc_gazepoint: {sc_gazepoint}")
       # vp_gazepoint = [(vp_width-sc_width)/2+sc_gazepoint[0] ,(vp_height-sc_height)/2+sc_gazepoint[1]+camera_screen_offset]
       vp_gazepoint = [(vp_width/2)+(sc_gazepoint[0]-(sc_width/2)) ,(vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_offset]
-      # print(f"vp_gazepoint: {vp_gazepoint}")
+      print(f"vp_gazepoint: {vp_gazepoint}")
       # **************
 
       flipped = False
@@ -224,6 +236,6 @@ class CTDet_gazeDataset(data.Dataset):
     if pog_loss:  
       gt_det = np.array(gt_det, dtype=np.float32) if len(gt_det) > 0 else \
                np.zeros((1, 4), dtype=np.float32)
-      meta = {'c': c, 's': s,'vp_c': vp_c, 'vp_s': vp_s, 'gt_det': gt_det, 'img_id': img_id}
+      meta = {'c': c, 's': s,'vp_c': vp_c, 'vp_s': vp_s, 'gt_det': gt_det, 'img_id': img_id,'vp_gazepoint': vp_gazepoint}
       ret['meta'] = meta
     return ret
