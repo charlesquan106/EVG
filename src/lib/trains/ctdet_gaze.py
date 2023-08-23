@@ -57,12 +57,14 @@ class CtdetGazeLoss(torch.nn.Module):
       output_hm = output['hm'][0].detach().cpu().numpy()
       output_hm = output_hm.transpose(1, 2, 0)
       
-      image_folder = "/home/owenserver/Python/CenterNet_gaze/hm_image"
+      current_path = os.getcwd()
+      parent_current_path = os.path.dirname(current_path)
+      image_folder = os.path.join(parent_current_path,'hm_image')
       if not os.path.exists(image_folder):
         os.makedirs(image_folder)
-      
-      src_path = "/home/owenserver/Python/CenterNet_gaze/exp/.gitignore"
-      dest_path = "/home/owenserver/Python/CenterNet_gaze/hm_image/.gitignore"
+        
+      src_path = os.path.join(parent_current_path,'exp','.gitignore')
+      dest_path = os.path.join(parent_current_path,'hm_image','.gitignore')
       if not os.path.exists(dest_path):
         shutil.copy(src_path, dest_path)
       

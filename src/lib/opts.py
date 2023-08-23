@@ -80,9 +80,9 @@ class opts(object):
                              help='input width. -1 for default from dataset.')
     
     # vp_size
-    self.parser.add_argument('--vp_h', type=int, default=1600, 
+    self.parser.add_argument('--vp_h', type=int, default=2100, 
                              help='virtual plane height.')
-    self.parser.add_argument('--vp_w', type=int, default=2560, 
+    self.parser.add_argument('--vp_w', type=int, default=3360, 
                              help='virtual plane width.')
     
     self.parser.add_argument('--vp_pixel_per_mm', type=float, default = 0,
@@ -155,6 +155,9 @@ class opts(object):
     self.parser.add_argument('--no_color_aug', action='store_true',
                              help='not use the color augmenation '
                                   'from CornerNet')
+    self.parser.add_argument('--no_shift_gaze_point_aug',action='store_true',
+                             help='not use the shift_gaze_point augmenation ')
+    
     # multi_pose
     self.parser.add_argument('--aug_rot', type=float, default=0, 
                              help='probability of applying '
@@ -218,12 +221,16 @@ class opts(object):
                       help='camera related screen position.')
     self.parser.add_argument('--pog_offset', action='store_true',
                              help='pog offset.')
-    self.parser.add_argument('--heat_map_debug', action='store_false',
-                          help='pog offset.')
+    self.parser.add_argument('--heat_map_debug', action='store_true',
+                          help='no need to save heat map to debug.')
     self.parser.add_argument('--data_train_person_id', type=int, default=4,
                       help='data_train_person_id')
     self.parser.add_argument('--data_test_person_id', type=int, default=4,
                   help='data_test_person_id') 
+    self.parser.add_argument('--not_data_train_val_exclude', action='store_true',
+                             help='not exclude gaze point excess virtual plane region.')
+    
+
     
     # self.parser.add_argument('--pog_offset_start_epoch', type=int, default=10,
     #                       help='the epoch to enable pog_offset.')

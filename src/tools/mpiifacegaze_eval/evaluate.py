@@ -265,7 +265,11 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_test_p14/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp_kr_resize_pl/pl001/gaze_resdcn18_ep70_all_keep_res_resize_s_pos_l_pog_0001/model_90.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/vp_s/gaze_resdcn18_test_vp_s_p05/model_70.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/sp_norm/gaze_resdcn18_ep70_sp_norm_p12/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/sp_norm/gaze_resdcn18_ep70_sp_norm_p12/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm/gaze_resdcn18_ep70_all_base_sp_norm_p10/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize/gaze_resdcn18_ep70_all_csp_kr_resize_p10/model_70.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize_pl/pl001/gaze_resdcn18_ep70_all_csp_kr_resize_pl001_p10/model_50.pth"
+    
     
     model = load_model(model, model_path)
     # if opt.load_model != '':
@@ -285,10 +289,25 @@ def main(opt):
     #   num_workers=1,
     #   pin_memory=True
     # )
+    def should_exclude(idx,item):
+        print(f"index: {idx}")
+        vp_gazepoint_x, vp_gazepoint_y = item['meta']['vp_gazepoint']
+
+        return vp_gazepoint_x > opt.vp_w or vp_gazepoint_x < 0 or vp_gazepoint_y > opt.vp_h or vp_gazepoint_y < 0
+  
+    exclude_val_index_list = [idx for idx, item in enumerate(Dataset(opt, 'val')) if should_exclude(idx,item)]
+    print("**********vp_gazepoint over virtual plane range need exclude**********")
+    print(f"exclude_val_index_list: {exclude_val_index_list}")
+    print(f"exclude_val_index_list len: {len(exclude_val_index_list)}")
+    exclude_val_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'val'))) if idx not in exclude_val_index_list])
+
+    
+    
     test_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'val'), 
       batch_size=1, 
       shuffle=False,
+      sampler=exclude_val_sampler,
       num_workers=1,
       pin_memory=True
     )

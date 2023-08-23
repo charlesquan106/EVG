@@ -128,6 +128,14 @@ class CTDet_gazeDataset(data.Dataset):
       
       raw_x,raw_y = ann['gazepoint']
       
+      # Random Gazepoint
+      # 1 cm (mm *10) as Gazepoint shift distance
+      if self.split == 'train':
+          if not self.opt.no_shift_gaze_point_aug : 
+            raw_x = np.random.uniform()* self.opt.vp_pixel_per_mm*10 + raw_x
+            raw_y = np.random.uniform()* self.opt.vp_pixel_per_mm*10 + raw_y
+
+      
       # print(self.opt.vp_pixel_per_mm)
       if self.opt.vp_pixel_per_mm > 0 :
         x = int((raw_x / raw_sc_width) * sc_width)
@@ -157,12 +165,9 @@ class CTDet_gazeDataset(data.Dataset):
       # print(f"vp_gazepoint: {vp_gazepoint}")
       # **************
 
-      flipped = False
-      if self.split == 'train':
 
-        if np.random.random() < self.opt.flip:
-          flipped = True
-          vp = vp[:, ::-1, :].copy()
+      if flipped:
+        vp = vp[:, ::-1, :].copy()
           
       vp_c = np.array([ vp_width / 2.0, vp_height/ 2.0], dtype=np.float32)
       if self.opt.keep_res:

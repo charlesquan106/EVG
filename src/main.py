@@ -14,11 +14,19 @@ from models.data_parallel import DataParallel
 from logger import Logger
 from datasets.dataset_factory import get_dataset
 from trains.train_factory import train_factory
+import tqdm
 
 # from datasets.sample.ctdet_gaze import CTDet_gazeDataset
 from datasets.dataset.mpiifacegaze import MpiiFaceGaze
 import cv2
 import matplotlib.pyplot as plt
+
+
+def should_exclude(idx,item):
+    # print(f"index: {idx}")
+    vp_gazepoint_x, vp_gazepoint_y = item['meta']['vp_gazepoint']
+
+    return vp_gazepoint_x > opt.vp_w or vp_gazepoint_x < 0 or vp_gazepoint_y > opt.vp_h or vp_gazepoint_y < 0
 
 
 def main(opt):
@@ -85,12 +93,20 @@ def main(opt):
     # plt.show()
   
   print('*****************')
+  exclude_val_index_list = []
+  if not opt.not_data_train_val_exclude :
+    exclude_val_index_list = [idx for idx, item in enumerate(tqdm.tqdm(Dataset(opt, 'val'))) if should_exclude(idx,item)]
+  print("**********vp_gazepoint over virtual plane range need exclude**********")
+  print(f"exclude_val_index_list: {exclude_val_index_list}")
+  print(f"exclude_val_index_list len: {len(exclude_val_index_list)}")
+  exclude_val_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'val'))) if idx not in exclude_val_index_list])
 
   print('Setting up data...')
   val_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'val'), 
       batch_size=1, 
       shuffle=False,
+      sampler=exclude_val_sampler,
       num_workers=1,
       pin_memory=True
   )
@@ -100,18 +116,13 @@ def main(opt):
     val_loader.dataset.run_eval(preds, opt.save_dir)
     return
   print("**********start check **********")
-  ##### exclude_index_list  #####
-  def should_exclude(idx,item):
-    print(f"index: {idx}")
-    vp_gazepoint_x, vp_gazepoint_y = item['meta']['vp_gazepoint']
-
-    return vp_gazepoint_x > opt.vp_w or vp_gazepoint_x < 0 or vp_gazepoint_y > opt.vp_h or vp_gazepoint_y < 0
-  
-  exclude_index_list = [idx for idx, item in enumerate(Dataset(opt, 'train')) if should_exclude(idx,item)]
+  exclude_train_index_list = []
+  if not opt.not_data_train_val_exclude :
+    exclude_train_index_list = [idx for idx, item in enumerate(tqdm.tqdm(Dataset(opt, 'train'))) if should_exclude(idx,item)]
   print("**********vp_gazepoint over virtual plane range need exclude**********")
-  print(f"exclude_index_list: {exclude_index_list}")
-  print(f"exclude_index_list len: {len(exclude_index_list)}")
-  exclude_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'train'))) if idx not in exclude_index_list])
+  print(f"exclude_train_index_list: {exclude_train_index_list}")
+  print(f"exclude_train_index_list len: {len(exclude_train_index_list)}")
+  exclude_train_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'train'))) if idx not in exclude_train_index_list])
   #####    #####       #####
   
   
@@ -119,7 +130,7 @@ def main(opt):
       Dataset(opt, 'train'), 
       batch_size=opt.batch_size, 
       shuffle=False,
-      sampler=exclude_sampler,
+      sampler=exclude_train_sampler,
       num_workers=opt.num_workers,
       pin_memory=True,
       drop_last=True
