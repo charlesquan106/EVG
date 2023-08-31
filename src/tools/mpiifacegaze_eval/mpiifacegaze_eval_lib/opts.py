@@ -80,9 +80,9 @@ class opts(object):
                              help='input width. -1 for default from dataset.')
     
     # vp_size
-    self.parser.add_argument('--vp_h', type=int, default=2100, 
+    self.parser.add_argument('--vp_h', type=int, default=2400, 
                              help='virtual plane height.')
-    self.parser.add_argument('--vp_w', type=int, default=3360, 
+    self.parser.add_argument('--vp_w', type=int, default=2400, 
                              help='virtual plane width.')
     
     self.parser.add_argument('--vp_pixel_per_mm', type=float, default = 0,
@@ -113,7 +113,7 @@ class opts(object):
                              help='batch size on the master gpu.')
     self.parser.add_argument('--num_iters', type=int, default=-1,
                              help='default: #samples / batch_size.')
-    self.parser.add_argument('--val_intervals', type=int, default=10,
+    self.parser.add_argument('--val_intervals', type=int, default=2,
                              help='number of epochs to run validation.')
     self.parser.add_argument('--trainval', action='store_true',
                              help='include validation in training and '
