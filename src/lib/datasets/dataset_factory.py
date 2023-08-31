@@ -10,6 +10,7 @@ from .sample.multi_pose import MultiPoseDataset
 
 from .dataset.coco import COCO
 from .dataset.mpiifacegaze import MpiiFaceGaze
+from .dataset.gazecapture import GazeCapture
 from .dataset.pascal import PascalVOC
 from .dataset.kitti import KITTI
 from .dataset.coco_hp import COCOHP
@@ -18,6 +19,7 @@ from .dataset.coco_hp import COCOHP
 dataset_factory = {
   'coco': COCO,
   'mpiifacegaze': MpiiFaceGaze,
+  'gazecapture': GazeCapture,
   'pascal': PascalVOC,
   'kitti': KITTI,
   'coco_hp': COCOHP

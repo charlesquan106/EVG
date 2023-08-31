@@ -110,10 +110,15 @@ class CTDet_gazeDataset(data.Dataset):
       # print("file_name",f'{file_name}')
       # print("unit_mm",f'{sc_width_mm} {sc_height_mm}')
       
-      # 5 pixel/mm  norm_screen_plane
       if self.opt.vp_pixel_per_mm > 0 :
-        sc_height = int(raw_sc_height_mm * self.opt.vp_pixel_per_mm)
-        sc_width = int(raw_sc_width_mm * self.opt.vp_pixel_per_mm)
+        vp_pixel_per_mm = self.opt.vp_pixel_per_mm
+      else : 
+        vp_pixel_per_mm = raw_sc_width /raw_sc_width_mm
+        
+      # 5 pixel/mm  norm_screen_plane
+      if vp_pixel_per_mm > 0 :
+        sc_height = int(raw_sc_height_mm * vp_pixel_per_mm)
+        sc_width = int(raw_sc_width_mm * vp_pixel_per_mm)
       else:
         sc_height = raw_sc_height
         sc_width = raw_sc_width
@@ -133,12 +138,11 @@ class CTDet_gazeDataset(data.Dataset):
       if self.split == 'train':
           if not self.opt.no_shift_gaze_point_aug : 
             if np.random.random() < self.opt.shift_gaze_point_ratio:
-              raw_x = np.random.uniform()* self.opt.vp_pixel_per_mm*10 + raw_x
-              raw_y = np.random.uniform()* self.opt.vp_pixel_per_mm*10 + raw_y
+              raw_x = np.random.uniform()* vp_pixel_per_mm * 10 + raw_x
+              raw_y = np.random.uniform()* vp_pixel_per_mm * 10 + raw_y
 
-      
       # print(self.opt.vp_pixel_per_mm)
-      if self.opt.vp_pixel_per_mm > 0 :
+      if vp_pixel_per_mm > 0 :
         x = int((raw_x / raw_sc_width) * sc_width)
         y = int((raw_y / raw_sc_height) * sc_height)
       else:
@@ -156,13 +160,30 @@ class CTDet_gazeDataset(data.Dataset):
       # print(f"id: {ann_id}")
       sc_gazepoint = np.array([x,y],dtype=np.int64)
 
-      if self.opt.camera_screen_pos:
-        camera_screen_offset = sc_height/2
-      else:
-        camera_screen_offset = 0
+      if self.opt.dataset == "gazecapture" :
+        _ ,tvecs = ann['monitorPose']
+        # in mm 
+        tvecs = eval(tvecs)
+        x_cameraToScreen_mm, y_cameraToScreen_mm, _ = tvecs 
+        
+        if self.opt.camera_screen_pos:
+          camera_screen_x_offset = x_cameraToScreen_mm * vp_pixel_per_mm
+          camera_screen_y_offset = y_cameraToScreen_mm * vp_pixel_per_mm
+        else:
+          camera_screen_x_offset = 0
+          camera_screen_y_offset = 0
+          
+      else :
+        # mpiifacegaze in pixel 
+        if self.opt.camera_screen_pos:
+          camera_screen_x_offset = 0
+          camera_screen_y_offset = sc_height/2
+        else:
+          camera_screen_x_offset = 0
+          camera_screen_y_offset = 0
         # print(f"sc_gazepoint: {sc_gazepoint}")
       # vp_gazepoint = [(vp_width-sc_width)/2+sc_gazepoint[0] ,(vp_height-sc_height)/2+sc_gazepoint[1]+camera_screen_offset]
-      vp_gazepoint = [(vp_width/2)+(sc_gazepoint[0]-(sc_width/2)) ,(vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_offset]
+      vp_gazepoint = [(vp_width/2)+(sc_gazepoint[0]-(sc_width/2))+ camera_screen_x_offset ,(vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_y_offset]
       # print(f"vp_gazepoint: {vp_gazepoint}")
       # **************
 
