@@ -132,8 +132,9 @@ class CTDet_gazeDataset(data.Dataset):
       # 1 cm (mm *10) as Gazepoint shift distance
       if self.split == 'train':
           if not self.opt.no_shift_gaze_point_aug : 
-            raw_x = np.random.uniform()* self.opt.vp_pixel_per_mm*10 + raw_x
-            raw_y = np.random.uniform()* self.opt.vp_pixel_per_mm*10 + raw_y
+            if np.random.random() < self.opt.shift_gaze_point_ratio:
+              raw_x = np.random.uniform()* self.opt.vp_pixel_per_mm*10 + raw_x
+              raw_y = np.random.uniform()* self.opt.vp_pixel_per_mm*10 + raw_y
 
       
       # print(self.opt.vp_pixel_per_mm)
