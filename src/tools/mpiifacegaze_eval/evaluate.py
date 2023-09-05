@@ -59,7 +59,7 @@ def test(model, test_loader, opt):
     # gts = []
     with torch.no_grad():
         for iter_id, batch in enumerate(test_loader):
-            print(f"Iteration {iter_id}/ {len(test_loader)}")
+            print(f"Iteration {iter_id}/ {len(test_loader)}",end="\r")
             
             for k in batch:
                 if k != 'meta':
@@ -215,7 +215,7 @@ def test(model, test_loader, opt):
             # L2_mm_errors.update(L2_mm_error)
             
             
-            print(f"L2_error = {L2_pixel_error} pixel, {L2_mm_error} mm")
+            # print(f"L2_error = {L2_pixel_error} pixel, {L2_mm_error} mm")
             
             # plt.title(f"piexl error = {L2_pixel_error}")
             # plt.imshow(hm_over, cmap="gray")
@@ -270,9 +270,16 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize/gaze_resdcn18_ep70_all_csp_kr_resize_p10/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize_pl/pl001/gaze_resdcn18_ep70_all_csp_kr_resize_pl001_p10/model_50.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_flipfix/gaze_resdcn18_ep70_all_base_sp_norm_flipfix_p02/model_70.pth"
+    
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_gp_shfit/gaze_resdcn18_ep70_all_base_sp_norm_gp_shift_p14/model_70.pth"
+    
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep140_test/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep30_test_all/model_30.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep30_test_phone/model_30.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_test_phone/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all_tablet/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all_tablet_pl01/model_70.pth"
+    
+    
     
     model = load_model(model, model_path)
     # if opt.load_model != '':
