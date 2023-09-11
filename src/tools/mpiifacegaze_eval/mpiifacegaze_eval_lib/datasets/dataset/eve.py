@@ -10,7 +10,7 @@ import os
 
 import torch.utils.data as data
 
-class MpiiFaceGaze(data.Dataset):
+class EVE(data.Dataset):
   num_classes = 1
   default_resolution = [512, 512]
   mean = np.array([0.485, 0.456, 0.406],
@@ -24,11 +24,10 @@ class MpiiFaceGaze(data.Dataset):
   #                  dtype=np.float32).reshape(1, 1, 3)
 
   def __init__(self, opt, split):
-    super(MpiiFaceGaze, self).__init__()
-    self.data_dir = os.path.join(opt.data_dir, 'gaze_MPIIFaceGaze')
+    super(EVE, self).__init__()
+    self.data_dir = os.path.join(opt.data_dir, 'gaze_EVE')
     self.img_dir = os.path.join(self.data_dir, 'images')
-    # _ann_name = {'train': 'train', 'val': 'test'}
-    _ann_name = {'train': f'train_p{opt.data_train_person_id:02}', 'val': f'test_p{opt.data_test_person_id:02}'}
+    _ann_name = {'train': f'train', 'val': f'test'}
     self.annot_path = os.path.join(
       self.data_dir, 'annotations', 
       'gaze_{}.json').format(_ann_name[split])
@@ -49,7 +48,7 @@ class MpiiFaceGaze(data.Dataset):
     self.opt = opt
     
 
-    print('==> initializing mpiifacegaze {} data.'.format(_ann_name[split]))
+    print('==> initializing EVE {} data.'.format(_ann_name[split]))
     self.coco = coco.COCO(self.annot_path)
     self.images = sorted(self.coco.getImgIds())
     self.num_samples = len(self.images)
@@ -86,6 +85,6 @@ class MpiiFaceGaze(data.Dataset):
     # json.dump(detections, open(result_json, "w"))
 
     self.save_results(results, save_dir)
-    os.system('python tools/mpiifacegaze_eval/evaluate.py ' + \
+    os.system('python tools/EVE_eval/evaluate.py ' + \
               '{}/results.json'.format(save_dir))
 

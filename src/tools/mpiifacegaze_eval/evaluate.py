@@ -313,7 +313,7 @@ def main(opt):
     
     test_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'val'), 
-      batch_size=1, 
+      batch_size=108, 
       shuffle=False,
     #   sampler=exclude_val_sampler,
       num_workers=1,
