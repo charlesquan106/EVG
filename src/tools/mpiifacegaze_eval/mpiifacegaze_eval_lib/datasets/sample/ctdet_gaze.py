@@ -166,7 +166,7 @@ class CTDet_gazeDataset(data.Dataset):
           camera_screen_x_offset = 0
           camera_screen_y_offset = 0
         # print(f"sc_gazepoint: {sc_gazepoint}"
-      vp_gazepoint = [(vp_width/2)+(sc_gazepoint[0]-(sc_width/2))+ camera_screen_x_offset ,(vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_y_offset]
+      vp_gazepoint = np.array([(vp_width/2)+(sc_gazepoint[0]-(sc_width/2))+ camera_screen_x_offset, (vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_y_offset], dtype=np.float32)
       # vp_gazepoint = [(vp_width/2)+(sc_gazepoint[0]-(sc_width/2)) ,(vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_offset]
       # print(f"vp_gazepoint: {vp_gazepoint}")
       # **************

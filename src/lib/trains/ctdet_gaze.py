@@ -196,18 +196,25 @@ class CtdetGazeLoss(torch.nn.Module):
       # print(f"dets_org_coord.shape: {dets_org_coord.shape}")
       # print(f"dets_org_coord: {dets_org_coord}")
 
-      
-      dets_gt = batch['meta']['gt_det'].numpy().reshape(1, -1, dets.shape[2])
-      dets_gt_out = ctdet_gaze_post_process(
-            dets_gt.copy(), batch['meta']['vp_c'].cpu().numpy(),
-            batch['meta']['vp_s'].cpu().numpy(),
-            batch['hm'].shape[2], batch['hm'].shape[3], batch['hm'].shape[1])
-      # dets_gt_org_coord = dets_gt_out[0][cls_id][0][:2]
-      dets_gt_org_coord = torch.tensor(dets_gt_out[0][cls_id][:])
-      dets_gt_org_coord = dets_gt_org_coord[:,:2]
+      dets_gt_org_coord = torch.tensor(batch['meta']['vp_gazepoint'].numpy())
+
+      # dets_gt_org_coord = batch['meta']['vp_gazepoint'].numpy().reshape(1, -1, dets.shape[2])
+      # dets_gt_org_coord = torch.tensor(dets_gt_org_coord[0][cls_id][:])
+      # dets_gt_org_coord = dets_gt_org_coord[:,:2]
+      # dets_gt = batch['meta']['gt_det'].numpy().reshape(1, -1, dets.shape[2])
+      # dets_gt_out = ctdet_gaze_post_process(
+      #       dets_gt.copy(), batch['meta']['vp_c'].cpu().numpy(),
+      #       batch['meta']['vp_s'].cpu().numpy(),
+      #       batch['hm'].shape[2], batch['hm'].shape[3], batch['hm'].shape[1])
+      # # dets_gt_org_coord = dets_gt_out[0][cls_id][0][:2]
+      # dets_gt_org_coord = torch.tensor(dets_gt_out[0][cls_id][:])
+      # dets_gt_org_coord = dets_gt_org_coord[:,:2]
       # print(f"dets_gt_org_coord: {dets_gt_org_coord}")
       # print(self.crit_pog(dets_org_coord, dets_gt_org_coord))
-      pog_loss += self.crit_pog(dets_org_coord, dets_gt_org_coord) / opt.num_stacks
+      
+      pog_loss += torch.sqrt(torch.sum((dets_org_coord - dets_gt_org_coord)**2, dim=1)).mean()
+      # pog_loss += self.crit_pog(dets_org_coord, dets_gt_org_coord) / opt.num_stacks
+      # print(pog_loss)
       # print(batch['hm'].shape)
       # print(f"pog_loss: {pog_loss}")
       # ------ pog_loss -------#

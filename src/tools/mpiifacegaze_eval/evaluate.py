@@ -16,32 +16,31 @@ from mpiifacegaze_eval_lib.models.decode import ctdet_gaze_decode
 from mpiifacegaze_eval_lib.utils.post_process import ctdet_gaze_post_process
 
 
-def euclidean_distance(x1, y1, x2, y2):
-    distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-    return distance
+# def euclidean_distance(x1, y1, x2, y2):
+#     distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+#     return distance
 
-def L2_distance(pred, gt):
+# def L2_distance(pred, gt):
 
-    x1, y1 = pred
-    x2, y2 = gt
-    error = euclidean_distance(x1, y1, x2, y2)
+#     x1, y1 = pred
+#     x2, y2 = gt
+#     error = euclidean_distance(x1, y1, x2, y2)
     
-    return error
+#     return error
 
+# def L2_distance_mm(pred, gt,mm_per_pixel):
 
-def L2_distance_mm(pred, gt,mm_per_pixel):
-
-    x1, y1 = pred
-    x2, y2 = gt
+#     x1, y1 = pred
+#     x2, y2 = gt
     
-    x1_mm = x1*mm_per_pixel
-    y1_mm = y1*mm_per_pixel
-    x2_mm = x2*mm_per_pixel
-    y2_mm = y2*mm_per_pixel
+#     x1_mm = x1*mm_per_pixel
+#     y1_mm = y1*mm_per_pixel
+#     x2_mm = x2*mm_per_pixel
+#     y2_mm = y2*mm_per_pixel
     
-    error = euclidean_distance(x1_mm, y1_mm, x2_mm, y2_mm)
+#     error = euclidean_distance(x1_mm, y1_mm, x2_mm, y2_mm)
     
-    return error
+#     return error
 
 
 def test(model, test_loader, opt):
@@ -74,9 +73,13 @@ def test(model, test_loader, opt):
             # plt.imshow(output_image, cmap="gray")
             # plt.axis('off')  # 关闭坐标轴
             # plt.show()
-
-            mm_per_pixel = batch['meta']['mm_per_pixel']
-            mm_per_pixel = float(mm_per_pixel.detach().cpu().numpy())
+            
+            mm_per_pixel = torch.tensor(batch['meta']['mm_per_pixel'].numpy())
+            
+            # print(type(mm_per_pixel))
+            # mm_per_pixel = torch.tensor(batch['meta']['mm_per_pixel'].numpy())
+            # mm_per_pixel = mm_per_pixel.view(N, 1).expand(N, 2)
+            # mm_per_pixel = float(mm_per_pixel.detach().cpu().numpy())
             # print("mm_per_pixel",f'{mm_per_pixel}')
             
             img_id = batch['meta']['img_id']
@@ -121,15 +124,25 @@ def test(model, test_loader, opt):
                 output['hm'].shape[2], output['hm'].shape[3], output['hm'].shape[1])
 
             # print(f"dets_out: {dets_out}")
-            for i in range(1):
-                cls_id = 1
-                dets_org_coord = dets_out[i][cls_id][0][:2]
-                # print(f"dets_org_coord: {dets_org_coord}")
             
-            dets_gt_out = ctdet_gaze_post_process(
-                dets_gt.copy(), batch['meta']['vp_c'].cpu().numpy(),
-                batch['meta']['vp_s'].cpu().numpy(),
-                batch['hm'].shape[2], batch['hm'].shape[3], batch['hm'].shape[1])
+            cls_id = 1
+            dets_org_coord = torch.tensor(dets_out[0][cls_id][:])
+            dets_org_coord = dets_org_coord[:,:2] 
+            # print(f"dets_org_coord type: {type(dets_org_coord)}")
+            # print(f"dets_org_coord.shape: {dets_org_coord.shape}")
+            # print(f"dets_org_coord: {dets_org_coord}")
+            # for i in range(1):
+            #     cls_id = 1
+            #     dets_org_coord = torch.tensor(dets_out[0][cls_id][:])
+            #     dets_org_coord = dets_out[i][cls_id][0][:2]
+            #     print(f"dets_org_coord type: {type(dets_org_coord)}")
+            #     print(f"dets_org_coord.shape: {dets_org_coord.shape}")
+            #     # print(f"dets_org_coord: {dets_org_coord}")
+            
+            # dets_gt_out = ctdet_gaze_post_process(
+            #     dets_gt.copy(), batch['meta']['vp_c'].cpu().numpy(),
+            #     batch['meta']['vp_s'].cpu().numpy(),
+            #     batch['hm'].shape[2], batch['hm'].shape[3], batch['hm'].shape[1])
 
             # for i in range(1):
             #     cls_id = 1
@@ -137,7 +150,8 @@ def test(model, test_loader, opt):
             #     dets_gt_org_coord = dets_gt_out[i][cls_id][0][:2]
             #     print(f"dets_gt_org_coord: {dets_gt_org_coord}")
                 
-            dets_gt_org_coord = batch['meta']['vp_gazepoint']
+            dets_gt_org_coord = torch.tensor(batch['meta']['vp_gazepoint'].numpy())
+            # print(f"vp_gazepoint type : {type(dets_gt_org_coord)}")
             # print(f"vp_gazepoint : {dets_gt_org_coord}")
             
             #-------------- manual find heat map max ----------------
@@ -200,20 +214,21 @@ def test(model, test_loader, opt):
             # print(file_name)
             # hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],0] =1  # red
             # hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],1] =0  
-            # hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],2] =0  
-
+            # hm_over[dets_gt_coord_int[1],dets_gt_coord_int[0],2] =0 
+            
+            # print("dets_org_coord: ",dets_org_coord)
+            # print("dets_gt_org_coord: ",dets_gt_org_coord)
             
             
-            
-            L2_pixel_error = L2_distance(dets_org_coord, dets_gt_org_coord)
+            error = 0
+            error = torch.sum((dets_org_coord - dets_gt_org_coord)**2, dim=1)
+            L2_pixel_error = torch.sqrt(error)
+            L2_pixel_error = L2_pixel_error.mean()
             L2_pixel_errors.update(L2_pixel_error)
             
-            L2_mm_error = L2_distance_mm(dets_org_coord, dets_gt_org_coord,mm_per_pixel)
+            L2_mm_error = torch.sqrt(error*(mm_per_pixel**2))
+            L2_mm_error = L2_mm_error.mean()
             L2_mm_errors.update(L2_mm_error)
-            
-            # L2_mm_error = L2_pixel_error*mm_per_pixel
-            # L2_mm_errors.update(L2_mm_error)
-            
             
             # print(f"L2_error = {L2_pixel_error} pixel, {L2_mm_error} mm")
             
@@ -268,7 +283,7 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/sp_norm/gaze_resdcn18_ep70_sp_norm_p12/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm/gaze_resdcn18_ep70_all_base_sp_norm_p10/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize/gaze_resdcn18_ep70_all_csp_kr_resize_p10/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize_pl/pl001/gaze_resdcn18_ep70_all_csp_kr_resize_pl001_p10/model_50.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize_pl/pl001/gaze_resdcn18_ep70_all_csp_kr_resize_pl001_p10/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_flipfix/gaze_resdcn18_ep70_all_base_sp_norm_flipfix_p02/model_70.pth"
     
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_gp_shfit/gaze_resdcn18_ep70_all_base_sp_norm_gp_shift_p08/model_70.pth"
@@ -276,7 +291,7 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep140_test/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep30_test_all/model_30.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_test_phone/model_70.pth"
-    model_path = "/home/master_111/nm6114091/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all/model_70.pth"
+    # model_path = "/home/master_111/nm6114091/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all/model_70.pth"
     
     
     model = load_model(model, model_path)
