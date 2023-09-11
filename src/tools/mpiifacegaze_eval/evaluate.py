@@ -59,7 +59,7 @@ def test(model, test_loader, opt):
     # gts = []
     with torch.no_grad():
         for iter_id, batch in enumerate(test_loader):
-            print(f"Iteration {iter_id}/ {len(test_loader)}")
+            print(f"Iteration {iter_id}/ {len(test_loader)}",end="\r")
             
             for k in batch:
                 if k != 'meta':
@@ -215,7 +215,7 @@ def test(model, test_loader, opt):
             # L2_mm_errors.update(L2_mm_error)
             
             
-            print(f"L2_error = {L2_pixel_error} pixel, {L2_mm_error} mm")
+            # print(f"L2_error = {L2_pixel_error} pixel, {L2_mm_error} mm")
             
             # plt.title(f"piexl error = {L2_pixel_error}")
             # plt.imshow(hm_over, cmap="gray")
@@ -270,9 +270,14 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize/gaze_resdcn18_ep70_all_csp_kr_resize_p10/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize_pl/pl001/gaze_resdcn18_ep70_all_csp_kr_resize_pl001_p10/model_50.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_flipfix/gaze_resdcn18_ep70_all_base_sp_norm_flipfix_p02/model_70.pth"
+    
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_gp_shfit/gaze_resdcn18_ep70_all_base_sp_norm_gp_shift_p08/model_70.pth"
+    
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep140_test/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep30_test_all/model_30.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep30_test_phone/model_30.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_test_phone/model_70.pth"
+    model_path = "/home/master_111/nm6114091/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all/model_70.pth"
+    
     
     model = load_model(model, model_path)
     # if opt.load_model != '':
@@ -292,17 +297,17 @@ def main(opt):
     #   num_workers=1,
     #   pin_memory=True
     # )
-    def should_exclude(idx,item):
-        print(f"index: {idx}")
-        vp_gazepoint_x, vp_gazepoint_y = item['meta']['vp_gazepoint']
+    # def should_exclude(idx,item):
+    #     print(f"index: {idx}",end='\r')
+    #     vp_gazepoint_x, vp_gazepoint_y = item['meta']['vp_gazepoint']
 
-        return vp_gazepoint_x > opt.vp_w or vp_gazepoint_x < 0 or vp_gazepoint_y > opt.vp_h or vp_gazepoint_y < 0
+    #     return vp_gazepoint_x > opt.vp_w or vp_gazepoint_x < 0 or vp_gazepoint_y > opt.vp_h or vp_gazepoint_y < 0
   
-    exclude_val_index_list = [idx for idx, item in enumerate(Dataset(opt, 'val')) if should_exclude(idx,item)]
-    print("**********vp_gazepoint over virtual plane range need exclude**********")
-    print(f"exclude_val_index_list: {exclude_val_index_list}")
-    print(f"exclude_val_index_list len: {len(exclude_val_index_list)}")
-    exclude_val_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'val'))) if idx not in exclude_val_index_list])
+    # exclude_val_index_list = [idx for idx, item in enumerate(Dataset(opt, 'val')) if should_exclude(idx,item)]
+    # print("**********vp_gazepoint over virtual plane range need exclude**********")
+    # print(f"exclude_val_index_list: {exclude_val_index_list}")
+    # print(f"exclude_val_index_list len: {len(exclude_val_index_list)}")
+    # exclude_val_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'val'))) if idx not in exclude_val_index_list])
 
     
     
@@ -310,7 +315,7 @@ def main(opt):
       Dataset(opt, 'val'), 
       batch_size=1, 
       shuffle=False,
-      sampler=exclude_val_sampler,
+    #   sampler=exclude_val_sampler,
       num_workers=1,
       pin_memory=True
     )
