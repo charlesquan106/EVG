@@ -271,15 +271,17 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize_pl/pl001/gaze_resdcn18_ep70_all_csp_kr_resize_pl001_p10/model_50.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_flipfix/gaze_resdcn18_ep70_all_base_sp_norm_flipfix_p02/model_70.pth"
     
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_gp_shfit/gaze_resdcn18_ep70_all_base_sp_norm_gp_shift_p14/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_gp_shfit/gaze_resdcn18_ep70_all_base_sp_norm_gp_shift_p14/model_70.pth"
     
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep140_test/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep30_test_all/model_30.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_test_phone/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all_tablet/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all_tablet_pl01/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all_phone_pl01/model_70.pth"
     
     
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_ep10_test/model_10.pth"
     
     model = load_model(model, model_path)
     # if opt.load_model != '':
@@ -315,7 +317,7 @@ def main(opt):
     
     test_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'val'), 
-      batch_size=1, 
+      batch_size=108, 
       shuffle=False,
       sampler=exclude_val_sampler,
       num_workers=1,
