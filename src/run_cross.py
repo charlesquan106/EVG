@@ -3,9 +3,12 @@ import subprocess
 # 要執行的檔案及對應的參數
 file = "main.py"
 file_params = [
-    "ctdet_gaze --exp_id gaze_resdcn18_ep70_all_base_sp_norm_p00 --arch resdcn_18 --dataset mpiifacegaze --num_epochs 70 --lr_step 45,60 --heat_map_debug --vp_pixel_per_mm 5 --data_train_person_id 0 --data_test_person_id 0",
-    "ctdet_gaze --exp_id gaze_resdcn18_ep70_all_base_sp_norm_p01 --arch resdcn_18 --dataset mpiifacegaze --num_epochs 70 --lr_step 45,60 --heat_map_debug --vp_pixel_per_mm 5 --data_train_person_id 1 --data_test_person_id 1",
-    "ctdet_gaze --exp_id gaze_resdcn18_ep70_all_base_sp_norm_p02 --arch resdcn_18 --dataset mpiifacegaze --num_epochs 70 --lr_step 45,60 --heat_map_debug --vp_pixel_per_mm 5 --data_train_person_id 2 --data_test_person_id 2"
+    # "ctdet_gaze --exp_id gaze_resdcncut_18_mpii_ep70_all_norm_p05_2 --arch resdcncut_18 --down_ratio 2 --dataset mpiifacegaze --num_epochs 70 --lr_step 45,60 --vp_pixel_per_mm 5  --data_train_person_id  5 --data_test_person_id  5",
+    # "ctdet_gaze --exp_id gaze_effv2s_mpii_ep70_all_norm_p08 --arch effv2s --dataset mpiifacegaze --num_epochs 70 --lr_step 45,60 --vp_pixel_per_mm 5 --data_train_person_id  8 --data_test_person_id  8",
+    # "ctdet_gaze --exp_id gaze_effv2s_mpii_ep70_all_norm_p10 --arch effv2s --dataset mpiifacegaze --num_epochs 70 --lr_step 45,60 --vp_pixel_per_mm 5 --data_train_person_id 10 --data_test_person_id 10",
+    "ctdet_gaze --exp_id gaze_resdcncut_18_mpii_tr_sc_r10_ep70_all_norm_csp_kr_pl001_p05 --arch resdcncut_18 --dataset mpiifacegaze --num_epochs 60 --lr 5e-3 --lr_step 10,30,50 --keep_res --resize_raw_image --camera_screen_pos --vp_h 2100 --vp_w 3360 --vp_pixel_per_mm 5 --pog_offset --pog_weight 0.01 --data_train_person_id  5 --data_test_person_id  5",
+    # "ctdet_gaze --exp_id gaze_effv2s_mpii_ep70_all_norm_csp_kr_pl001_p08 --arch effv2s --dataset mpiifacegaze --num_epochs 70 --lr_step 45,60 --keep_res --resize_raw_image --camera_screen_pos --vp_h 2100 --vp_w 3360 --vp_pixel_per_mm 5 --pog_offset --pog_weight 0.01 --data_train_person_id  8 --data_test_person_id  8",
+    # "ctdet_gaze --exp_id gaze_effv2s_mpii_ep70_all_norm_csp_kr_pl001_p10 --arch effv2s --dataset mpiifacegaze --num_epochs 70 --lr_step 45,60 --keep_res --resize_raw_image --camera_screen_pos --vp_h 2100 --vp_w 3360 --vp_pixel_per_mm 5 --pog_offset --pog_weight 0.01 --data_train_person_id 10 --data_test_person_id 10",
 
 ]
 

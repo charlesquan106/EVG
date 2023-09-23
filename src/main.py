@@ -166,8 +166,8 @@ def main(opt):
       save_model(os.path.join(opt.save_dir, 'model_last.pth'), 
                  epoch, model, optimizer)
     logger.write('\n')
-    if epoch % 10 == 0:
-      # every 10 epoch will save model weights
+    if epoch % 2 == 0:
+      # every 5 epoch will save model weights
       save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(epoch)), 
                  epoch, model, optimizer)
     

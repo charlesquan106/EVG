@@ -80,9 +80,9 @@ class opts(object):
                              help='input width. -1 for default from dataset.')
     
     # vp_size
-    self.parser.add_argument('--vp_h', type=int, default=2100, 
+    self.parser.add_argument('--vp_h', type=int, default=1600, 
                              help='virtual plane height.')
-    self.parser.add_argument('--vp_w', type=int, default=3360, 
+    self.parser.add_argument('--vp_w', type=int, default=2560, 
                              help='virtual plane width.')
     
     self.parser.add_argument('--vp_pixel_per_mm', type=float, default = 0,
@@ -107,13 +107,13 @@ class opts(object):
                              help='drop learning rate by 10.')
     self.parser.add_argument('--num_epochs', type=int, default=70,
                              help='total training epochs.')
-    self.parser.add_argument('--batch_size', type=int, default=108,
+    self.parser.add_argument('--batch_size', type=int, default=72,
                              help='batch size')
     self.parser.add_argument('--master_batch_size', type=int, default=-1,
                              help='batch size on the master gpu.')
     self.parser.add_argument('--num_iters', type=int, default=-1,
                              help='default: #samples / batch_size.')
-    self.parser.add_argument('--val_intervals', type=int, default=10,
+    self.parser.add_argument('--val_intervals', type=int, default=2,
                              help='number of epochs to run validation.')
     self.parser.add_argument('--trainval', action='store_true',
                              help='include validation in training and '
@@ -155,8 +155,8 @@ class opts(object):
     self.parser.add_argument('--no_color_aug', action='store_true',
                              help='not use the color augmenation '
                                   'from CornerNet')
-    self.parser.add_argument('--no_shift_gaze_point_aug',action='store_true',
-                             help='not use the shift_gaze_point augmenation ')
+    self.parser.add_argument('--shift_gaze_point_aug',action='store_true',
+                             help='use the shift_gaze_point augmenation ')
     self.parser.add_argument('--shift_gaze_point_ratio', type = float, default=0.5,
                              help='probability of applying shift_gaze_point augmentation')
     
