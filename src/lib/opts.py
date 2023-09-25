@@ -107,7 +107,7 @@ class opts(object):
                              help='drop learning rate by 10.')
     self.parser.add_argument('--num_epochs', type=int, default=70,
                              help='total training epochs.')
-    self.parser.add_argument('--batch_size', type=int, default=72,
+    self.parser.add_argument('--batch_size', type=int, default=108,
                              help='batch size')
     self.parser.add_argument('--master_batch_size', type=int, default=-1,
                              help='batch size on the master gpu.')
@@ -118,6 +118,8 @@ class opts(object):
     self.parser.add_argument('--trainval', action='store_true',
                              help='include validation in training and '
                                   'test on test set')
+    self.parser.add_argument('--weight_decay', type=float, default=0, 
+                            help='regularization')
 
     # test
     self.parser.add_argument('--flip_test', action='store_true',

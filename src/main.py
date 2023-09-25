@@ -20,6 +20,7 @@ import tqdm
 from datasets.dataset.mpiifacegaze import MpiiFaceGaze
 import cv2
 import matplotlib.pyplot as plt
+from early_stopping import EarlyStopping
 
 
 def should_exclude(idx,item):
@@ -36,6 +37,7 @@ def main(opt):
   opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
   # print(opt)
   
+  early_stopping = EarlyStopping(patience=4,delta=0.2)
   logger = Logger(opt)
 
   os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
@@ -142,7 +144,7 @@ def main(opt):
   
   # for batch in enumerate(train_loader):
   #   pass
-    
+  val_loss = 0
   for epoch in range(start_epoch + 1, opt.num_epochs + 1):
     mark = epoch if opt.save_all else 'last'
     log_dict_train, _ = trainer.train(epoch, train_loader)
@@ -150,6 +152,8 @@ def main(opt):
     for k, v in log_dict_train.items():
       logger.scalar_summary('train_{}'.format(k), v, epoch)
       logger.write('{} {:8f} | '.format(k, v))
+      
+
     if opt.val_intervals > 0 and epoch % opt.val_intervals == 0:
       save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(mark)), 
                  epoch, model, optimizer)
@@ -158,6 +162,11 @@ def main(opt):
       for k, v in log_dict_val.items():
         logger.scalar_summary('val_{}'.format(k), v, epoch)
         logger.write('{} {:8f} | '.format(k, v))
+        
+        if k == "loss" :
+          val_loss = v
+          early_stopping(val_loss)
+        
       if log_dict_val[opt.metric] < best:
         best = log_dict_val[opt.metric]
         save_model(os.path.join(opt.save_dir, 'model_best.pth'), 
@@ -178,6 +187,11 @@ def main(opt):
       print('Drop LR to', lr)
       for param_group in optimizer.param_groups:
           param_group['lr'] = lr
+          
+    #达到早停止条件时，early_stop会被置为True
+    if early_stopping.early_stop:
+        print("Early stopping !!!!")
+        break #跳出迭代，结束训练
   logger.close()
 
 if __name__ == '__main__':

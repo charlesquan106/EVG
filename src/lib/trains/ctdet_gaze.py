@@ -19,13 +19,19 @@ import cv2
 from datetime import datetime
 import shutil
 
+from regularization import Regularization
+
+
 class CtdetGazeLoss(torch.nn.Module):
-  def __init__(self, opt):
+  def __init__(self, opt, model):
     super(CtdetGazeLoss, self).__init__()
     self.crit = torch.nn.MSELoss() if opt.mse_loss else FocalLoss()
     self.crit_reg = RegL1Loss() if opt.reg_loss == 'l1' else \
               RegLoss() if opt.reg_loss == 'sl1' else None
     self.crit_pog = torch.nn.MSELoss()
+    
+    self.model = model
+    self.regular = Regularization(self.model, opt.weight_decay, p=2).to(opt.device)
     self.opt = opt
 
   def forward(self, outputs, batch):
@@ -219,21 +225,24 @@ class CtdetGazeLoss(torch.nn.Module):
       # print(f"pog_loss: {pog_loss}")
       # ------ pog_loss -------#
         
+      # ------ regular -------#  
+      regular_loss = self.regular(self.model)
         
     # pog_weight = opt.pog_weight if opt.pog_offset_start_epoch > 10 else 0
     
     # loss = opt.hm_weight * hm_loss + opt.off_weight * off_loss  
-    loss = opt.hm_weight * hm_loss + opt.off_weight * off_loss + opt.pog_weight * pog_loss
-    loss_stats = {'loss': loss, 'hm_loss': hm_loss, 'off_loss': off_loss, 'pog_loss': pog_loss}
+    loss = opt.hm_weight * hm_loss + opt.off_weight * off_loss + opt.pog_weight * pog_loss + 1 *regular_loss
+    loss_stats = {'loss': loss, 'hm_loss': hm_loss, 'off_loss': off_loss, 'pog_loss': pog_loss , 'reg_loss': regular_loss}
     return loss, loss_stats
 
 class Ctdet_GazeTrainer(BaseTrainer):
   def __init__(self, opt, model, optimizer=None):
+    self.model = model
     super(Ctdet_GazeTrainer, self).__init__(opt, model, optimizer=optimizer)
   
   def _get_losses(self, opt):
-    loss_states = ['loss', 'hm_loss', 'off_loss','pog_loss']
-    loss = CtdetGazeLoss(opt)
+    loss_states = ['loss', 'hm_loss', 'off_loss','pog_loss','reg_loss']
+    loss = CtdetGazeLoss(opt, self.model)
     return loss_states, loss
 
   def debug(self, batch, output, iter_id):
