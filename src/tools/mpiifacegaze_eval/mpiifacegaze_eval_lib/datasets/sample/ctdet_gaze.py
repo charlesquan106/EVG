@@ -13,6 +13,7 @@ from mpiifacegaze_eval_lib.utils.image import get_affine_transform, affine_trans
 from mpiifacegaze_eval_lib.utils.image import gaussian_radius, draw_umich_gaussian, draw_msra_gaussian
 from mpiifacegaze_eval_lib.utils.image import draw_dense_reg
 import math
+import matplotlib.pyplot as plt
 
 
 class CTDet_gazeDataset(data.Dataset):
@@ -31,12 +32,15 @@ class CTDet_gazeDataset(data.Dataset):
     anns = self.coco.loadAnns(ids=ann_ids)
     num_objs = min(len(anns), self.max_objs)
   
+    # cv2.shape -> h,w,c
     img = cv2.imread(img_path)
     if self.opt.resize_raw_image:
+      # cv2.resize -> (w,h)
       img = cv2.resize(img, (self.opt.resize_raw_image_w, self.opt.resize_raw_image_h), interpolation=cv2.INTER_LINEAR)
     img_height, img_width = img.shape[0], img.shape[1]
     input_h, input_w = self.opt.input_h, self.opt.input_w
 
+    # c  -> (w,h)
     c = np.array([img.shape[1] / 2., img.shape[0] / 2.], dtype=np.float32)
     if self.opt.keep_res:
       input_h = (img_height | self.opt.pad) + 1
@@ -63,8 +67,11 @@ class CTDet_gazeDataset(data.Dataset):
     inp = (inp.astype(np.float32) / 255.)
     # if self.split == 'train' and not self.opt.no_color_aug:
     #   color_aug(self._data_rng, inp, self._eig_val, self._eig_vec)
-    # inp = (inp - self.mean) / self.std
+    inp = (inp - self.mean) / self.std
     inp = inp.transpose(2, 0, 1)
+    
+    # cv2 相關  (w,h)
+    # plt 相關  (h,w,c)
 
     output_h = input_h // self.opt.down_ratio
     output_w = input_w // self.opt.down_ratio
@@ -124,7 +131,7 @@ class CTDet_gazeDataset(data.Dataset):
       
       
       
-      
+      # (x,y)-> cv2 -> (w,h,c)
       raw_x,raw_y = ann['gazepoint']
       if self.opt.vp_pixel_per_mm > 0 :
         x = int((raw_x / raw_sc_width) * sc_width)
@@ -170,7 +177,13 @@ class CTDet_gazeDataset(data.Dataset):
       # vp_gazepoint = [(vp_width/2)+(sc_gazepoint[0]-(sc_width/2)) ,(vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_offset]
       # print(f"vp_gazepoint: {vp_gazepoint}")
       # **************
-  
+
+      if vp_gazepoint[0] >= vp_width or vp_gazepoint[0] < 0 or vp_gazepoint[1] >= vp_height or vp_gazepoint[1] < 0:
+          print("clamp vp_gazepoint before : ",vp_gazepoint)
+          vp_gazepoint[0] = max(min(vp_gazepoint[0], vp_width-1), 0)
+          vp_gazepoint[1] = max(min(vp_gazepoint[1], vp_height-1), 0)
+          print("clamp vp_gazepoint after : ",vp_gazepoint)
+
       flipped = False
       if self.split == 'train':
 
@@ -251,6 +264,7 @@ class CTDet_gazeDataset(data.Dataset):
     if self.opt.face_grid:
       ret.update({'face_grid': face_grid})
     if self.opt.debug > 0 or not self.split == 'train':
+    # if self.opt.debug > 0:
       gt_det = np.array(gt_det, dtype=np.float32) if len(gt_det) > 0 else \
                np.zeros((1, 4), dtype=np.float32)
       meta = {'c': c, 's': s,'vp_c': vp_c, 'vp_s': vp_s, 'gt_det': gt_det, 'img_id': img_id, "vp_gazepoint": vp_gazepoint,\

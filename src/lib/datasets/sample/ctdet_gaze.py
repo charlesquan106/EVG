@@ -14,7 +14,6 @@ from utils.image import gaussian_radius, draw_umich_gaussian, draw_msra_gaussian
 from utils.image import draw_dense_reg
 import math
 
-
 class CTDet_gazeDataset(data.Dataset):
   def _get_border(self, border, size):
     i = 1
@@ -73,7 +72,7 @@ class CTDet_gazeDataset(data.Dataset):
     inp = (inp.astype(np.float32) / 255.)
     # if self.split == 'train' and not self.opt.no_color_aug:
     #   color_aug(self._data_rng, inp, self._eig_val, self._eig_vec)
-    # inp = (inp - self.mean) / self.std
+    inp = (inp - self.mean) / self.std
     inp = inp.transpose(2, 0, 1)
 
     output_h = input_h // self.opt.down_ratio
@@ -186,6 +185,12 @@ class CTDet_gazeDataset(data.Dataset):
       vp_gazepoint = np.array([(vp_width/2)+(sc_gazepoint[0]-(sc_width/2))+ camera_screen_x_offset, (vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_y_offset], dtype=np.float32)
       # print(f"vp_gazepoint: {vp_gazepoint}")
       # **************
+      
+      if vp_gazepoint[0] >= vp_width or vp_gazepoint[0] < 0 or vp_gazepoint[1] >= vp_height or vp_gazepoint[1] < 0:
+        print("clamp vp_gazepoint before : ",vp_gazepoint)
+        vp_gazepoint[0] = max(min(vp_gazepoint[0], vp_width-1), 0)
+        vp_gazepoint[1] = max(min(vp_gazepoint[1], vp_height-1), 0)
+        print("clamp vp_gazepoint after : ",vp_gazepoint)
 
 
       if flipped:

@@ -25,9 +25,9 @@ class EVE(data.Dataset):
 
   def __init__(self, opt, split):
     super(EVE, self).__init__()
-    self.data_dir = os.path.join(opt.data_dir, 'gaze_EVE')
+    self.data_dir = os.path.join(opt.data_dir, 'gaze_EVE_test')
     self.img_dir = os.path.join(self.data_dir, 'images')
-    _ann_name = {'train': f'train', 'val': f'test'}
+    _ann_name = {'train': f'train', 'val': f'val'}
     self.annot_path = os.path.join(
       self.data_dir, 'annotations', 
       'gaze_{}.json').format(_ann_name[split])

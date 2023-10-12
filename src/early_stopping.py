@@ -17,25 +17,30 @@ class EarlyStopping:
         self.patience = patience
         self.verbose = verbose
         self.counter = 0
-        self.best_score = None
+        self.best_loss = None
         self.early_stop = False
         self.val_loss_min = np.Inf
         self.delta = delta
 
     def __call__(self, val_loss):
         
-        score = -val_loss
+        loss = val_loss
 
-        if self.best_score is None:
-            self.best_score = score
+        if self.best_loss is None:
+            self.best_loss = loss
             # self.save_checkpoint(val_loss, model)
-        elif score < self.best_score + self.delta:
-            self.counter += 1
-            print(f'EarlyStopping counter: {self.counter} out of {self.patience}, best_score is {self.best_score}')
-            if self.counter >= self.patience:
-                self.early_stop = True
+        elif loss > self.best_loss:
+            
+            if loss < self.best_loss + self.delta:
+                print(f'EarlyStopping counter: {self.counter} out of {self.patience}, best_loss is {self.best_loss}, in tolerance{self.delta}')
+                pass
+            else:
+                self.counter += 1
+                print(f'EarlyStopping counter: {self.counter} out of {self.patience}, best_loss is {self.best_loss}')
+                if self.counter >= self.patience:
+                    self.early_stop = True
         else:
-            self.best_score = score
+            self.best_loss = loss
             # self.save_checkpoint(val_loss, model)
             self.counter = 0
 

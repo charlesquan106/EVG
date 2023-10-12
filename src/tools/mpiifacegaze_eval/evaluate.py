@@ -42,6 +42,40 @@ from mpiifacegaze_eval_lib.utils.post_process import ctdet_gaze_post_process
     
 #     return error
 
+class UpdateHeatmap(object):
+    def __init__(self,w,h):
+        self.h = h
+        self.w = w
+        self.heatmap = np.zeros((self.w,self.h))
+        self.sum = np.zeros((self.w,self.h))
+        self.counter = np.zeros((self.w,self.h))
+
+    def update(self, x, y , val):
+        wide = 20
+        # self.sum[x-wide: x+wide, y-wide: y+wide , 0] = int(np.log(val + 1))
+        self.sum[x-wide: x+wide, y-wide: y+wide ] = int(val)
+    
+        self.sum[x-wide: x+wide, y-wide: y+wide] = self.sum[x-wide: x+wide, y-wide: y+wide] + self.heatmap[x-wide: x+wide, y-wide: y+wide]
+        self.counter[x-wide: x+wide, y-wide: y+wide] = self.counter[x-wide: x+wide, y-wide: y+wide] + 1
+        if self.counter[x, y] > 1 :
+            self.heatmap[x-wide: x+wide, y-wide: y+wide] = self.sum[x-wide: x+wide, y-wide: y+wide] / self.counter[x-wide: x+wide, y-wide: y+wide]
+        else:
+            self.heatmap[x-wide: x+wide, y-wide: y+wide] = self.sum[x-wide: x+wide, y-wide: y+wide]
+        
+    def quantized(self,x_scale,y_scale):
+        
+        quantized_data = np.zeros((x_scale, y_scale))
+        
+        x_unit = int(self.w / x_scale)
+        y_unit = int(self.h / y_scale)
+        print(x_unit)
+        
+        for i in range(x_scale):
+            for j in range(y_scale):
+                quantized_data[i, j] = np.mean(self.heatmap[i * x_unit:(i + 1) * x_unit, j * y_unit:(j + 1) * y_unit])
+        
+
+        return quantized_data
 
 
 def unit_error_display(heatmap, dets_gt_org_coord, error):
@@ -56,7 +90,7 @@ def unit_error_display(heatmap, dets_gt_org_coord, error):
 
 def test(model, test_loader, opt):
     
-    heatmap = np.zeros((opt.vp_h,opt.vp_w))
+    # heatmap = np.zeros((opt.vp_h,opt.vp_w))
     
     
     model.eval()
@@ -68,6 +102,9 @@ def test(model, test_loader, opt):
     L2_pixel_errors = AverageMeter()
     L2_mm_errors = AverageMeter()
     losses_gaze = AverageMeter()
+    update_heatmap = UpdateHeatmap(opt.vp_w,opt.vp_h)
+    
+    L2_pixel_errors_list = []
 
     # predictions = []
     # gts = []
@@ -75,8 +112,8 @@ def test(model, test_loader, opt):
         for iter_id, batch in enumerate(test_loader):
             print(f"Iteration {iter_id}/ {len(test_loader)}",end="\r")
             
-            # if iter_id > 200:
-            #     break
+            if iter_id > 3000:
+                break
             
             for k in batch:
                 if k != 'meta':
@@ -88,9 +125,9 @@ def test(model, test_loader, opt):
             
             output_image = batch_image[0].detach().cpu().numpy()
             output_image = output_image.transpose(1, 2, 0)
-            plt.imshow(output_image, cmap="gray")
-            plt.axis('off')  # 关闭坐标轴
-            plt.show()
+            # plt.imshow(output_image, cmap="gray")
+            # plt.axis('off')  # 关闭坐标轴
+            # plt.show()
             
             mm_per_pixel = torch.tensor(batch['meta']['mm_per_pixel'].numpy())
             
@@ -106,14 +143,23 @@ def test(model, test_loader, opt):
             output = outputs[-1]
             hm = output['hm'].sigmoid_()
             
-            print(f"shape of hm {hm.shape}")
             
+            
+            # heatmap Ground Truth vs Predict
+            gt_hm = batch['hm'][0].detach().cpu().numpy()
+            gt_hm = gt_hm.transpose(1, 2, 0)
+    
             output_hm = output['hm'][0].detach().cpu().numpy()
             output_hm = output_hm.transpose(1, 2, 0)
             
-            plt.imshow(output_hm, cmap="gray")
-            plt.axis('off')  # 关闭坐标轴
-            plt.show()
+            # plt.subplot(1, 2, 1)
+            # plt.imshow(gt_hm, cmap="gray")
+            # plt.title('Ground Truth')
+
+            # plt.subplot(1, 2, 2)
+            # plt.imshow(output_hm, cmap="gray")
+            # plt.title('Predict')
+            # plt.show()
             
             
             
@@ -123,14 +169,14 @@ def test(model, test_loader, opt):
             # print(f"dets: {dets}")
             dets = dets.detach().cpu().numpy()
             dets = dets.reshape(1, -1, dets.shape[2])
-            print(dets)
+            # print(dets)
 
             dets_out = ctdet_gaze_post_process(
                 dets.copy(), batch['meta']['vp_c'].cpu().numpy(),
                 batch['meta']['vp_s'].cpu().numpy(),
                 output['hm'].shape[2], output['hm'].shape[3], output['hm'].shape[1])
             
-            print(dets_out)
+            # print(dets_out)
 
             
             cls_id = 1
@@ -149,8 +195,10 @@ def test(model, test_loader, opt):
             
                 
             dets_gt_org_coord = torch.tensor(batch['meta']['vp_gazepoint'].numpy())
+            # print("dets_gt_org_coord: ",dets_gt_org_coord )
+            # vp_gazepoint (w, h)
             # print(f"vp_gazepoint type : {type(dets_gt_org_coord)}")
-            print(f"vp_gazepoint : {dets_gt_org_coord}")
+            # print(f"vp_gazepoint : {dets_gt_org_coord}")
             
             
             
@@ -167,12 +215,20 @@ def test(model, test_loader, opt):
             
             # unit_error_display(dets_gt_org_coord,error)
             
-            x = int(dets_gt_org_coord[0][1])
-            y = int(dets_gt_org_coord[0][0])
-            new_heatmap = np.zeros((opt.vp_h,opt.vp_w))
-            new_heatmap[x-20:x+20, y-20:y+20] = int(L2_pixel_error)
+            x = int(dets_gt_org_coord[0][0])
+            y = int(dets_gt_org_coord[0][1])
+            # print("dets_gt_org_coord: ", x,"  ", y )
             
-            heatmap =  heatmap + new_heatmap
+            
+            update_heatmap.update(x,y,L2_pixel_error)
+            
+            
+            # heatmap = update_heatmap.vis()
+            # plt.title(f"piexl error heatmap")
+            # plt.imshow(heatmap, cmap="gray")
+            # plt.axis('off')  # 关闭坐标轴
+            # plt.show()      
+        
             
             # print(f"L2_error = {L2_pixel_error} pixel, {L2_mm_error} mm")
             
@@ -181,14 +237,107 @@ def test(model, test_loader, opt):
             # plt.axis('off')  # 关闭坐标轴
             # plt.show()
             # break
+        
+            L2_pixel_errors_list.append(int(L2_pixel_error))
+    
+    x_scale, y_scale = 50,50
+    heatmap = update_heatmap.quantized(x_scale,y_scale)
+    heatmap = heatmap.transpose(1,0)
+    
+    x_unit = opt.vp_w / x_scale
+    y_unit = opt.vp_h / y_scale
+    extents=[0, x_scale, y_scale, 0]
+    plt.figure(figsize=(10, 10))
+    plt.imshow(heatmap, cmap=plt.cm.jet, extent= extents)
+    # 添加 x 和 y 轴标签
+    plt.xlabel(f'X ({x_unit} pixel/unit)')
+    plt.ylabel(f'Y ({y_unit} pixel/unit)')
+
+    # 在每10个 bin 上添加数值标注
+    step = 5
+    x_labels = np.arange(0, x_scale, step)
+    y_labels = np.arange(0, y_scale, step)
+    
+    
+    plt.xticks(x_labels, [str(i) for i in x_labels])
+    plt.yticks(y_labels, [str(i) for i in y_labels])
+    
+    
+    # x_labels = np.linspace(0, 50, 11)  # 使用np.linspace设置刻度位置
+    # y_labels = np.linspace(0, 50, 11)
+
+    # # 设置 x 和 y 轴的刻度标签
+    # plt.xticks(x_labels, [str(int(i)) for i in x_labels])
+    # plt.yticks(y_labels, [str(int(i)) for i in y_labels])
+    
+
+
+    # 创建颜色条
+    cbar = plt.colorbar()
+    cbar.set_label('Pixel Error')
+    
+    # plt.grid(color='black', linestyle='-', linewidth=0.5,)
+    
+    for i in range(1, x_scale):
+        plt.axvline(x=i, color='black', linewidth=0.5)
+    for j in range(1, y_scale):
+        plt.axhline(y=j, color='black', linewidth=0.5)
+
+    plt.title('Quantized Data Visualization')
+    plt.show()
+    
+    
+    
 
     mean_L2_pixel_errors = L2_pixel_errors.avg
     mean_L2_mm_errors = L2_mm_errors.avg
-
-    # plt.title(f"piexl error heatmap")
-    # plt.imshow(heatmap, cmap="gray")
-    # plt.axis('off')  # 关闭坐标轴
+    
+    # Creating histogram
+    # n_bins = 20
+    # fig, axs = plt.subplots(1, 1,
+    #                         figsize =(10, 7),
+    #                         tight_layout = True)
+    # axs.hist(L2_pixel_errors_list, bins = n_bins)
+ 
+    # # Show plot
     # plt.show()
+    
+    n_bins = 20
+    fig, axs = plt.subplots(1, 1, figsize=(10, 7), tight_layout=True)
+    hist, bins, _ = axs.hist(L2_pixel_errors_list, bins=n_bins, alpha=0.5, color='blue')
+    
+    # 計算每個 bin 中的百分比
+    bin_percentages = ((hist/10)/ len(L2_pixel_errors_list)) * 100
+
+    # 添加 y 軸標籤為百分比
+    axs.set_ylabel('Percentage (%)')
+
+    # 添加 x 軸標籤和標題
+    axs.set_xlabel('L2 Pixel Errors')
+    axs.set_title('Histogram of L2 Pixel Errors')
+    
+    
+    # plt.yticks(np.arange(0, max(max(hist), max(hist_normal)) + 1, 1))  # 根據兩組數據的最大值設定刻度
+
+    # # 添加圖例
+    # axs.legend()
+
+    # 在每個 bin 上標註百分比
+    for i in range(len(bins) - 1):
+        bin_center = (bins[i] + bins[i + 1]) / 2
+        plt.text(bin_center, hist[i] + 0.2, f'{bin_percentages[i]*10:.1f}%', ha='center', va='bottom')
+        
+        
+        
+        # 設定 y 軸刻度，自動調整以符合資料的比例
+    # plt.yticks(np.arange(0, max(hist) + 1))  # 設定刻度，此處以 1 為間隔
+
+    # 顯示圖形
+    plt.show()
+    
+    
+
+
 
             
     return mean_L2_pixel_errors,mean_L2_mm_errors
@@ -236,17 +385,20 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_flipfix/gaze_resdcn18_ep70_all_base_sp_norm_flipfix_p02/model_70.pth"
     
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_gp_shfit/gaze_resdcn18_ep70_all_base_sp_norm_gp_shift_p08/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_norm_csp_kr_pl001_p12_pl_fix/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_norm_csp_kr_pl001_p05_pl_fix/model_70.pth"
     
     
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep140_test/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep30_test_all/model_30.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all_phone_pl01/model_70.pth"
-    # model_path = "/home/master_111/nm6114091/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all/model_70.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all/model_70.pth"
     
     
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcncut_18_mpii_r10_ep70_all_norm_csp_kr_pl001_p05/model_14.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcncut_18_mpii_r10_ep70_all_norm_csp_kr_pl001_p05/model_14.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcncut_18_mpii_r10_ep70_all_norm_csp_kr_pl001_p05/model_14.pth" 
     
+    
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_sc_kr/model_5.pth"
     
     
     model = load_model(model, model_path)
@@ -268,6 +420,12 @@ def main(opt):
       pin_memory=True
     )
     
+    
+    # dataset_exclude = Dataset(opt, 'val')
+    
+    # list_dataset_exclude = dataset_exclude.show_filter_data
+    # print("list_dataset_exclude:",list_dataset_exclude)
+    
     # def should_exclude(idx,item):
     #     print(f"index: {idx}",end='\r')
     #     vp_gazepoint_x, vp_gazepoint_y = item['meta']['vp_gazepoint']
@@ -279,6 +437,28 @@ def main(opt):
     # print(f"exclude_val_index_list: {exclude_val_index_list}")
     # print(f"exclude_val_index_list len: {len(exclude_val_index_list)}")
     # exclude_val_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'val'))) if idx not in exclude_val_index_list])
+
+
+    # def filter_data(item):
+    #     # 根据需要定义筛选条件
+        
+    #     vp_gazepoint_x, vp_gazepoint_y = item['meta']['vp_gazepoint']
+        
+    #     if vp_gazepoint_x > opt.vp_w or vp_gazepoint_x < 0 or vp_gazepoint_y > opt.vp_h or vp_gazepoint_y < 0:
+    #         return True
+    #     return False
+
+    # # 创建一个包含筛选后的数据项的子集
+    # filtered_indices = [i for i, item in enumerate(dataset_exclude) if filter_data(item) and item > 50]
+    # filtered_dataset = torch.utils.data.Subset(dataset_exclude, filtered_indices)
+    
+    # test_loader = torch.utils.data.DataLoader(
+    #     filtered_dataset,
+    #     batch_size=1,
+    #     shuffle=False,
+    #     num_workers=1,
+    #     pin_memory=True
+    # )
 
     
     

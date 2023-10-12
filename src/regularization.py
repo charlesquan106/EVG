@@ -10,9 +10,9 @@ class Regularization(torch.nn.Module):
                   当p=0为L2正则化,p=1为L1正则化
         '''
         super(Regularization, self).__init__()
-        if weight_decay <= 0:
-            print("param weight_decay can not <=0")
-            exit(0)
+        # if weight_decay <= 0:
+        #     print("param weight_decay can not <=0")
+        #     exit(0)
         self.model=model
         self.weight_decay=weight_decay
         self.p=p

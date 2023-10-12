@@ -31,7 +31,7 @@ class CtdetGazeLoss(torch.nn.Module):
     self.crit_pog = torch.nn.MSELoss()
     
     self.model = model
-    self.regular = Regularization(self.model, opt.weight_decay, p=2).to(opt.device)
+    self.regular = Regularization(self.model, opt.weight_decay, p=1).to(opt.device)
     self.opt = opt
 
   def forward(self, outputs, batch):

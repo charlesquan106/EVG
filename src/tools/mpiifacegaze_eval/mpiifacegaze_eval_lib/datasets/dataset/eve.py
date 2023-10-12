@@ -25,9 +25,9 @@ class EVE(data.Dataset):
 
   def __init__(self, opt, split):
     super(EVE, self).__init__()
-    self.data_dir = os.path.join(opt.data_dir, 'gaze_EVE')
+    self.data_dir = os.path.join(opt.data_dir, 'gaze_EVE_cv2')
     self.img_dir = os.path.join(self.data_dir, 'images')
-    _ann_name = {'train': f'train', 'val': f'test'}
+    _ann_name = {'train': f'train', 'val': f'val'}
     self.annot_path = os.path.join(
       self.data_dir, 'annotations', 
       'gaze_{}.json').format(_ann_name[split])
@@ -46,6 +46,8 @@ class EVE(data.Dataset):
     ], dtype=np.float32)
     self.split = split
     self.opt = opt
+    
+    self.filtered_indices = []
     
 
     print('==> initializing EVE {} data.'.format(_ann_name[split]))
@@ -87,4 +89,8 @@ class EVE(data.Dataset):
     self.save_results(results, save_dir)
     os.system('python tools/EVE_eval/evaluate.py ' + \
               '{}/results.json'.format(save_dir))
+    
+  def show_filter_data(self):
+
+    return self.filtered_indices
 
