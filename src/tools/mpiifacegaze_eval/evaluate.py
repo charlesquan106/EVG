@@ -112,7 +112,7 @@ def test(model, test_loader, opt):
         for iter_id, batch in enumerate(test_loader):
             print(f"Iteration {iter_id}/ {len(test_loader)}",end="\r")
             
-            if iter_id > 3000:
+            if iter_id > 500:
                 break
             
             for k in batch:
@@ -123,9 +123,9 @@ def test(model, test_loader, opt):
             
             batch_image = batch['input']
             
-            output_image = batch_image[0].detach().cpu().numpy()
-            output_image = output_image.transpose(1, 2, 0)
-            # plt.imshow(output_image, cmap="gray")
+            batch_image = batch_image[0].detach().cpu().numpy()
+            batch_image = batch_image.transpose(1, 2, 0)
+            # plt.imshow(batch_image)
             # plt.axis('off')  # 关闭坐标轴
             # plt.show()
             
@@ -152,14 +152,14 @@ def test(model, test_loader, opt):
             output_hm = output['hm'][0].detach().cpu().numpy()
             output_hm = output_hm.transpose(1, 2, 0)
             
-            # plt.subplot(1, 2, 1)
-            # plt.imshow(gt_hm, cmap="gray")
-            # plt.title('Ground Truth')
+            plt.subplot(1, 2, 1)
+            plt.imshow(gt_hm, cmap="gray")
+            plt.title('Ground Truth')
 
-            # plt.subplot(1, 2, 2)
-            # plt.imshow(output_hm, cmap="gray")
-            # plt.title('Predict')
-            # plt.show()
+            plt.subplot(1, 2, 2)
+            plt.imshow(output_hm, cmap="gray")
+            plt.title('Predict')
+            plt.show()
             
             
             
@@ -386,7 +386,7 @@ def main(opt):
     
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_gp_shfit/gaze_resdcn18_ep70_all_base_sp_norm_gp_shift_p08/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_norm_csp_kr_pl001_p05_pl_fix/model_70.pth"
-    
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_csp_kr_resize_p05_petrain_eve/model_56.pth"
     
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep140_test/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep30_test_all/model_30.pth"

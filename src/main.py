@@ -37,10 +37,16 @@ def main(opt):
   opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
   # print(opt)
   
-  early_stopping = EarlyStopping(patience=4,delta=0.2)
+  early_stopping = EarlyStopping(patience=4,delta=10)
   logger = Logger(opt)
 
-  os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
+  force_server_training = 0
+  if force_server_training == 0 :
+    os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
+  else:	
+    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+    torch.cuda.set_device(1)
+    
   opt.device = torch.device('cuda' if opt.gpus[0] >= 0 else 'cpu')
   
   print('Creating model...')
@@ -95,20 +101,19 @@ def main(opt):
     # plt.show()
   
   print('*****************')
-  exclude_val_index_list = []
-  if not opt.not_data_train_val_exclude :
-    exclude_val_index_list = [idx for idx, item in enumerate(tqdm.tqdm(Dataset(opt, 'val'))) if should_exclude(idx,item)]
-  print("**********vp_gazepoint over virtual plane range need exclude**********")
-  print(f"exclude_val_index_list: {exclude_val_index_list}")
-  print(f"exclude_val_index_list len: {len(exclude_val_index_list)}")
-  exclude_val_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'val'))) if idx not in exclude_val_index_list])
+  # exclude_val_index_list = []
+  # if not opt.not_data_train_val_exclude :
+  #   exclude_val_index_list = [idx for idx, item in enumerate(tqdm.tqdm(Dataset(opt, 'val'))) if should_exclude(idx,item)]
+  # print("**********vp_gazepoint over virtual plane range need exclude**********")
+  # print(f"exclude_val_index_list: {exclude_val_index_list}")
+  # print(f"exclude_val_index_list len: {len(exclude_val_index_list)}")
+  # exclude_val_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'val'))) if idx not in exclude_val_index_list])
 
   print('Setting up data...')
   val_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'val'), 
       batch_size=1, 
       shuffle=False,
-      sampler=exclude_val_sampler,
       num_workers=1,
       pin_memory=True
   )
@@ -117,22 +122,21 @@ def main(opt):
     _, preds = trainer.val(0, val_loader)
     val_loader.dataset.run_eval(preds, opt.save_dir)
     return
-  print("**********start check **********")
-  exclude_train_index_list = []
-  if not opt.not_data_train_val_exclude :
-    exclude_train_index_list = [idx for idx, item in enumerate(tqdm.tqdm(Dataset(opt, 'train'))) if should_exclude(idx,item)]
-  print("**********vp_gazepoint over virtual plane range need exclude**********")
-  print(f"exclude_train_index_list: {exclude_train_index_list}")
-  print(f"exclude_train_index_list len: {len(exclude_train_index_list)}")
-  exclude_train_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'train'))) if idx not in exclude_train_index_list])
+  # print("**********start check **********")
+  # exclude_train_index_list = []
+  # if not opt.not_data_train_val_exclude :
+  #   exclude_train_index_list = [idx for idx, item in enumerate(tqdm.tqdm(Dataset(opt, 'train'))) if should_exclude(idx,item)]
+  # print("**********vp_gazepoint over virtual plane range need exclude**********")
+  # print(f"exclude_train_index_list: {exclude_train_index_list}")
+  # print(f"exclude_train_index_list len: {len(exclude_train_index_list)}")
+  # exclude_train_sampler = torch.utils.data.sampler.SubsetRandomSampler([idx for idx in range(len(Dataset(opt, 'train'))) if idx not in exclude_train_index_list])
   #####    #####       #####
   
   
   train_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'train'), 
       batch_size=opt.batch_size, 
-      shuffle=False,
-      sampler=exclude_train_sampler,
+      shuffle=True,
       num_workers=opt.num_workers,
       pin_memory=True,
       drop_last=True
@@ -151,7 +155,7 @@ def main(opt):
     logger.write('epoch: {} |'.format(epoch))
     for k, v in log_dict_train.items():
       logger.scalar_summary('train_{}'.format(k), v, epoch)
-      logger.write('{} {:8f} | '.format(k, v))
+      logger.write('{} {:.2f} | '.format(k, v))
       
 
     if opt.val_intervals > 0 and epoch % opt.val_intervals == 0:
@@ -163,7 +167,7 @@ def main(opt):
         logger.scalar_summary('val_{}'.format(k), v, epoch)
         logger.write('{} {:8f} | '.format(k, v))
         
-        if k == "loss" :
+        if k == "pog_loss" :
           val_loss = v
           early_stopping(val_loss)
         
@@ -175,8 +179,8 @@ def main(opt):
       save_model(os.path.join(opt.save_dir, 'model_last.pth'), 
                  epoch, model, optimizer)
     logger.write('\n')
-    if epoch % 2 == 0:
-      # every 5 epoch will save model weights
+    if epoch % opt.val_intervals == 0:
+      # every val_intervals epoch will save model weights
       save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(epoch)), 
                  epoch, model, optimizer)
     
