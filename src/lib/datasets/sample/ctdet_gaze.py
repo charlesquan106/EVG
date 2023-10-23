@@ -34,6 +34,15 @@ class CTDet_gazeDataset(data.Dataset):
     img = cv2.imread(img_path)
     if self.opt.resize_raw_image:
       img = cv2.resize(img, (self.opt.resize_raw_image_w, self.opt.resize_raw_image_h), interpolation=cv2.INTER_LINEAR)
+    
+    if self.opt.gray_image:
+      img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+      if self.opt.gray_image_with_equalizeHist:
+        img = cv2.equalizeHist(img)
+      # print("image shape: ",img.shape)
+      img = np.repeat(img[..., np.newaxis], 3, -1)
+      # print("image shape: ",img.shape)
+    
     img_height, img_width = img.shape[0], img.shape[1]
     input_h, input_w = self.opt.input_h, self.opt.input_w
     # print(img_height)
@@ -72,7 +81,8 @@ class CTDet_gazeDataset(data.Dataset):
     inp = (inp.astype(np.float32) / 255.)
     # if self.split == 'train' and not self.opt.no_color_aug:
     #   color_aug(self._data_rng, inp, self._eig_val, self._eig_vec)
-    inp = (inp - self.mean) / self.std
+    if not self.opt.gray_image:
+      inp = (inp - self.mean) / self.std
     inp = inp.transpose(2, 0, 1)
 
     output_h = input_h // self.opt.down_ratio
@@ -113,6 +123,8 @@ class CTDet_gazeDataset(data.Dataset):
         vp_pixel_per_mm = self.opt.vp_pixel_per_mm
       else : 
         vp_pixel_per_mm = raw_sc_width /raw_sc_width_mm
+        
+      # print("vp_pixel_per_mm = ",vp_pixel_per_mm)
         
       # 5 pixel/mm  norm_screen_plane
       if vp_pixel_per_mm > 0 :
@@ -172,6 +184,27 @@ class CTDet_gazeDataset(data.Dataset):
           camera_screen_x_offset = 0
           camera_screen_y_offset = 0
           
+      elif self.opt.dataset == "himax" :
+
+
+        if self.split == 'train':
+          # train mpiifacegaze in pixel   
+          if self.opt.camera_screen_pos:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = sc_height/2
+          else:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = 0
+        else:
+          # val himax in pixel 
+          if self.opt.camera_screen_pos:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = sc_height/2 + 78* vp_pixel_per_mm 
+            # 78 mm camera to screen
+          else:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = 0
+          
       else :
         # mpiifacegaze in pixel 
         if self.opt.camera_screen_pos:
@@ -183,11 +216,13 @@ class CTDet_gazeDataset(data.Dataset):
         # print(f"sc_gazepoint: {sc_gazepoint}")
       # vp_gazepoint = [(vp_width-sc_width)/2+sc_gazepoint[0] ,(vp_height-sc_height)/2+sc_gazepoint[1]+camera_screen_offset]
       vp_gazepoint = np.array([(vp_width/2)+(sc_gazepoint[0]-(sc_width/2))+ camera_screen_x_offset, (vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_y_offset], dtype=np.float32)
+      # vp_gazepoint = np.array([(vp_width/2)+(sc_gazepoint[0]-(sc_width/2))+ camera_screen_x_offset, (vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_y_offset], dtype=np.float32)
       # print(f"vp_gazepoint: {vp_gazepoint}")
       # **************
       
       if vp_gazepoint[0] >= vp_width or vp_gazepoint[0] < 0 or vp_gazepoint[1] >= vp_height or vp_gazepoint[1] < 0:
         print("clamp vp_gazepoint before : ",vp_gazepoint)
+        print("sc_gazepoint : ",sc_gazepoint)
         vp_gazepoint[0] = max(min(vp_gazepoint[0], vp_width-1), 0)
         vp_gazepoint[1] = max(min(vp_gazepoint[1], vp_height-1), 0)
         print("clamp vp_gazepoint after : ",vp_gazepoint)

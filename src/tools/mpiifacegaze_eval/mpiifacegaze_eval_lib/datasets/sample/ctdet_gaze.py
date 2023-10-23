@@ -37,6 +37,16 @@ class CTDet_gazeDataset(data.Dataset):
     if self.opt.resize_raw_image:
       # cv2.resize -> (w,h)
       img = cv2.resize(img, (self.opt.resize_raw_image_w, self.opt.resize_raw_image_h), interpolation=cv2.INTER_LINEAR)
+      
+    if self.opt.gray_image:
+      img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+      if self.opt.gray_image_with_equalizeHist:
+        img = cv2.equalizeHist(img)
+
+      # print("image shape: ",img.shape)
+      img = np.repeat(img[..., np.newaxis], 3, -1)
+      # print("image shape: ",img.shape)
+    
     img_height, img_width = img.shape[0], img.shape[1]
     input_h, input_w = self.opt.input_h, self.opt.input_w
 
@@ -67,7 +77,8 @@ class CTDet_gazeDataset(data.Dataset):
     inp = (inp.astype(np.float32) / 255.)
     # if self.split == 'train' and not self.opt.no_color_aug:
     #   color_aug(self._data_rng, inp, self._eig_val, self._eig_vec)
-    inp = (inp - self.mean) / self.std
+    if not self.opt.gray_image:
+      inp = (inp - self.mean) / self.std
     inp = inp.transpose(2, 0, 1)
     
     # cv2 相關  (w,h)

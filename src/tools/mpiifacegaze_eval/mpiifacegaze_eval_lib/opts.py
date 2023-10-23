@@ -78,6 +78,10 @@ class opts(object):
                              help='input height. -1 for default from dataset.')
     self.parser.add_argument('--input_w', type=int, default=-1, 
                              help='input width. -1 for default from dataset.')
+    self.parser.add_argument('--gray_image', action='store_true',
+                      help='gray_image')
+    self.parser.add_argument('--gray_image_with_equalizeHist', action='store_true',
+                  help='gray_image_with_equalizeHist')
     
     # vp_size
     self.parser.add_argument('--vp_h', type=int, default=2100, 

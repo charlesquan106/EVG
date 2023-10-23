@@ -112,8 +112,8 @@ def test(model, test_loader, opt):
         for iter_id, batch in enumerate(test_loader):
             print(f"Iteration {iter_id}/ {len(test_loader)}",end="\r")
             
-            if iter_id > 500:
-                break
+            # if iter_id > 500:
+            #     break
             
             for k in batch:
                 if k != 'meta':
@@ -128,6 +128,11 @@ def test(model, test_loader, opt):
             # plt.imshow(batch_image)
             # plt.axis('off')  # 关闭坐标轴
             # plt.show()
+            
+            # plt.figure(figsize=(16, 4))
+            # plt.subplot(1, 3, 1)
+            # plt.imshow(batch_image, cmap="gray")
+            # plt.title('input image')
             
             mm_per_pixel = torch.tensor(batch['meta']['mm_per_pixel'].numpy())
             
@@ -152,14 +157,14 @@ def test(model, test_loader, opt):
             output_hm = output['hm'][0].detach().cpu().numpy()
             output_hm = output_hm.transpose(1, 2, 0)
             
-            plt.subplot(1, 2, 1)
-            plt.imshow(gt_hm, cmap="gray")
-            plt.title('Ground Truth')
+            # plt.subplot(1, 3, 2)
+            # plt.imshow(gt_hm, cmap="gray")
+            # plt.title('Ground Truth')
 
-            plt.subplot(1, 2, 2)
-            plt.imshow(output_hm, cmap="gray")
-            plt.title('Predict')
-            plt.show()
+            # plt.subplot(1, 3, 3)
+            # plt.imshow(output_hm, cmap="gray")
+            # plt.title('Predict')
+            
             
             
             
@@ -237,7 +242,12 @@ def test(model, test_loader, opt):
             # plt.axis('off')  # 关闭坐标轴
             # plt.show()
             # break
-        
+            
+            # 添加说明文字
+            # plt.figtext(0.5, 0.01, f"L2_error = {L2_pixel_error} pixel", ha='center', fontsize=12)
+            # plt.show()
+            
+            
             L2_pixel_errors_list.append(int(L2_pixel_error))
     
     x_scale, y_scale = 50,50
@@ -398,8 +408,12 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcncut_18_mpii_r10_ep70_all_norm_csp_kr_pl001_p05/model_14.pth" 
     
     
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_sc_kr/model_5.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_sc_kr/model_5.pth"
     
+    
+    #### cross evaluation  ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_test_himax_sc_kr_mono/model_2.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_impii_resdcn18_p05_test_himax_sc_kr_mono/model_44.pth"
     
     model = load_model(model, model_path)
     # if opt.load_model != '':

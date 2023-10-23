@@ -113,3 +113,4 @@ src/run_cross.py
 src/tools/mpiifacegaze_eval/evaluate.py
 src/tools/mpiifacegaze_eval/mpiifacegaze_eval_lib/data/gaze_GazeCapture
 src/tools/mpiifacegaze_eval/mpiifacegaze_eval_lib/data/gaze_MPIIFaceGaze
+src/tools/mpiifacegaze_eval/mpiifacegaze_eval_lib/data/gaze_EVE_ffmpeg

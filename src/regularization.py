@@ -59,7 +59,7 @@ class Regularization(torch.nn.Module):
         # reg_loss=Variable(torch.FloatTensor([0.]).to(self.device),requires_grad=True)
         # weight_decay=torch.FloatTensor([weight_decay]).to(self.device)
         # reg_loss=torch.FloatTensor([0.]).to(self.device)
-        reg_loss=0
+        reg_loss=self.weight_decay
         for name, w in weight_list:
             l2_reg = torch.norm(w, p=p)
             reg_loss = reg_loss + l2_reg
