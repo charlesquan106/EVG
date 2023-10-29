@@ -196,6 +196,8 @@ class opts(object):
     # ctdet_gaze
     self.parser.add_argument('--pog_weight', type=float, default=0,
                           help='loss weight for PoG.')
+    self.parser.add_argument('--face_hm_weight', type=float, default=1,
+                          help='loss weight for keypoint face heatmaps.')
     
     # multi_pose
     self.parser.add_argument('--hp_weight', type=float, default=1,
@@ -237,6 +239,10 @@ class opts(object):
                   help='data_test_person_id') 
     self.parser.add_argument('--not_data_train_val_exclude', action='store_true',
                              help='not exclude gaze point excess virtual plane region.')
+    self.parser.add_argument('--face_hm_head', action='store_true',
+                      help='face_hm_head.')
+    self.parser.add_argument('--face_crop_ratio', type = float, default=0,
+                          help='probability of applying face_crop augmentation.')
     
 
     

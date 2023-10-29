@@ -22,9 +22,9 @@ import shutil
 from regularization import Regularization
 
 
-class CtdetGazeLoss(torch.nn.Module):
+class CtdetGazeFaceLoss(torch.nn.Module):
   def __init__(self, opt, model):
-    super(CtdetGazeLoss, self).__init__()
+    super(CtdetGazeFaceLoss, self).__init__()
     self.crit = torch.nn.MSELoss() if opt.mse_loss else FocalLoss()
     self.crit_reg = RegL1Loss() if opt.reg_loss == 'l1' else \
               RegLoss() if opt.reg_loss == 'sl1' else None
@@ -244,14 +244,14 @@ class CtdetGazeLoss(torch.nn.Module):
     loss_stats = {'loss': loss, 'hm_loss': hm_loss, 'off_loss': off_loss, 'pog_loss': pog_loss , 'reg_loss': regular_loss , 'face_hm_loss': face_hm_loss}
     return loss, loss_stats
 
-class Ctdet_GazeTrainer(BaseTrainer):
+class Ctdet_GazeFaceTrainer(BaseTrainer):
   def __init__(self, opt, model, optimizer=None):
     self.model = model
-    super(Ctdet_GazeTrainer, self).__init__(opt, model, optimizer=optimizer)
+    super(Ctdet_GazeFaceTrainer, self).__init__(opt, model, optimizer=optimizer)
   
   def _get_losses(self, opt):
     loss_states = ['loss', 'hm_loss', 'off_loss','pog_loss','reg_loss','face_hm_loss']
-    loss = CtdetGazeLoss(opt, self.model)
+    loss = CtdetGazeFaceLoss(opt, self.model)
     return loss_states, loss
 
   def debug(self, batch, output, iter_id):

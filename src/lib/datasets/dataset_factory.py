@@ -33,6 +33,7 @@ _sample_factory = {
   'exdet': EXDetDataset,
   'ctdet': CTDetDataset,
   'ctdet_gaze': CTDet_gazeDataset,
+  'ctdet_gazeface': CTDet_gazeDataset,
   'ddd': DddDataset,
   'multi_pose': MultiPoseDataset
 }

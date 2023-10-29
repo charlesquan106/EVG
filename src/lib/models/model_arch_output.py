@@ -15,7 +15,8 @@ from torchvision.models import resnet50, ResNet50_Weights
 # from networks.msra_resnet import get_pose_net
 # from networks.msra_resnet_cut import get_pose_net
 # from networks.resnet_dcn import get_pose_net 
-from networks.resnet_dcn_cut import get_pose_net 
+# from networks.resnet_dcn_cut import get_pose_net 
+from networks.resnet_dcn_face import get_pose_net_dcn_face 
 # from networks.eff_v2_s import get_pose_net 
 # from networks.mob_v2 import get_pose_net
 # from networks.mob_v3_s import get_pose_net
@@ -43,9 +44,16 @@ head_conv = 64
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # model = get_pose_net(heads,head_conv).to(device)
-model = get_pose_net(num_layers,heads,head_conv).to(device)
+# model = get_pose_net_dcn_face(num_layers,heads,head_conv).to(device)
+# model = get_pose_net_dcn(num_layers,heads,head_conv).to(device)
+
 # model = get_pose_net(num_layers,heads,head_conv)
 # model = get_pose_net(num_layers= num_layers, heads =heads ).to(device)
+
+
+# model = get_pose_net_dcn_face(num_layers,heads,head_conv)
+model = get_pose_net_dcn_face(num_layers= num_layers, heads =heads ).to(device)
+
 # model = models.mobilenet_v2()
 # summary(model, input_size=  (3,480,272))
 # summary(model, input_size=  (3,224,224))
