@@ -37,7 +37,7 @@ class CTDet_gazeDataset(data.Dataset):
     
     
 
-    if np.random.random() < self.opt.face_crop_ratio :  
+    if np.random.random() <= self.opt.face_crop_ratio :  
       # set face_crop_ratio to process face crop image to be train, with probability to train 
       # with mixing face crop and non-face crop data
       for k in range(num_objs):

@@ -234,14 +234,12 @@ class CtdetGazeLoss(torch.nn.Module):
       # ------ face_hm -------#  
       # print("output['face_hm'] = ",output['face_hm'].shape)
       # print("batch['face_hm'] = ",batch['face_hm'].shape)
-      if opt.face_hm_head :
-        output['face_hm'] = _sigmoid(output['face_hm'])
-        face_hm_loss += self.crit(output['face_hm'], batch['face_hm']) / opt.num_stacks
+
 
 
     # loss = opt.hm_weight * hm_loss + opt.off_weight * off_loss  
-    loss = opt.hm_weight * hm_loss + opt.off_weight * off_loss + opt.pog_weight * pog_loss + 1 *regular_loss + opt.face_hm_weight * face_hm_loss
-    loss_stats = {'loss': loss, 'hm_loss': hm_loss, 'off_loss': off_loss, 'pog_loss': pog_loss , 'reg_loss': regular_loss , 'face_hm_loss': face_hm_loss}
+    loss = opt.hm_weight * hm_loss + opt.off_weight * off_loss + opt.pog_weight * pog_loss + 1 *regular_loss 
+    loss_stats = {'loss': loss, 'hm_loss': hm_loss, 'off_loss': off_loss, 'pog_loss': pog_loss , 'reg_loss': regular_loss }
     return loss, loss_stats
 
 class Ctdet_GazeTrainer(BaseTrainer):
@@ -250,7 +248,7 @@ class Ctdet_GazeTrainer(BaseTrainer):
     super(Ctdet_GazeTrainer, self).__init__(opt, model, optimizer=optimizer)
   
   def _get_losses(self, opt):
-    loss_states = ['loss', 'hm_loss', 'off_loss','pog_loss','reg_loss','face_hm_loss']
+    loss_states = ['loss', 'hm_loss', 'off_loss','pog_loss','reg_loss']
     loss = CtdetGazeLoss(opt, self.model)
     return loss_states, loss
 
