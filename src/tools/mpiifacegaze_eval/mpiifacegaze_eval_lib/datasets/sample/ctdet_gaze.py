@@ -34,6 +34,26 @@ class CTDet_gazeDataset(data.Dataset):
   
     # cv2.shape -> h,w,c
     img = cv2.imread(img_path)
+    raw_img_height, raw_img_width = img.shape[0], img.shape[1] 
+    
+    
+    if np.random.random() <= self.opt.face_crop_ratio :  
+      # set face_crop_ratio to process face crop image to be train, with probability to train 
+      # with mixing face crop and non-face crop data
+      for k in range(num_objs):
+        ann = anns[k]
+        # faceBbox_list = ann['faceBbox']
+        # faceBbox  = faceBbox_list[0]
+        # faceBbox = eval(faceBbox)
+        # bbox = np.array([faceBbox[0], faceBbox[1], faceBbox[2] , faceBbox[3]],dtype=np.float32)
+        bbox = np.array(eval(ann['faceBbox'][0]), dtype=np.float32)
+        
+        img_black = np.zeros_like(img)
+        img_black[int(bbox[1]):int(bbox[3]) , int(bbox[0]):int(bbox[2])] = img[int(bbox[1]):int(bbox[3]) , int(bbox[0]):int(bbox[2])]
+        img = img_black
+
+    
+    
     if self.opt.resize_raw_image:
       # cv2.resize -> (w,h)
       img = cv2.resize(img, (self.opt.resize_raw_image_w, self.opt.resize_raw_image_h), interpolation=cv2.INTER_LINEAR)
@@ -87,6 +107,10 @@ class CTDet_gazeDataset(data.Dataset):
     output_h = input_h // self.opt.down_ratio
     output_w = input_w // self.opt.down_ratio
     
+    
+    # for face_hm 
+    trans_image_output = get_affine_transform(c, s, 0, [output_w, output_h])
+    
     # print(f"output_hw: {output_h},{output_w}")
 
     num_classes = self.num_classes
@@ -96,6 +120,7 @@ class CTDet_gazeDataset(data.Dataset):
     ind = np.zeros((self.max_objs), dtype=np.int64)
     reg_mask = np.zeros((self.max_objs), dtype=np.uint8)
     face_grid = np.zeros((self.max_objs, 2), dtype=np.int64)
+    face_hm = np.zeros((num_classes, output_h, output_w), dtype=np.float32)
 
     draw_gaussian = draw_msra_gaussian if self.opt.mse_loss else \
                     draw_umich_gaussian
@@ -264,6 +289,37 @@ class CTDet_gazeDataset(data.Dataset):
         # print("dataset processing")
         # print([ct[1], ct[0], 1, cls_id])
         
+        
+      if self.opt.face_hm_head :
+        bbox = np.array(eval(ann['faceBbox'][0]), dtype=np.float32)
+        
+        # scale_x, scale_y = 1,1
+        if self.opt.resize_raw_image:
+          scale_x = self.opt.resize_raw_image_w / raw_img_width
+          scale_y = self.opt.resize_raw_image_h / raw_img_height
+          bbox[0] = bbox[0] * scale_x
+          bbox[2] = bbox[2] * scale_x
+          bbox[1] = bbox[1] * scale_y
+          bbox[3] = bbox[3] * scale_y
+        
+        if flipped:
+          bbox[[0, 2]] = img_width - bbox[[2, 0]] - 1
+        bbox[:2] = affine_transform(bbox[:2], trans_image_output)
+        bbox[2:] = affine_transform(bbox[2:], trans_image_output)
+        bbox[[0, 2]] = np.clip(bbox[[0, 2]], 0, output_w - 1)
+        bbox[[1, 3]] = np.clip(bbox[[1, 3]], 0, output_h - 1)
+      
+      
+        bbox_h, bbox_w = bbox[3] - bbox[1], bbox[2] - bbox[0]
+        if bbox_h > 0 and bbox_w > 0:
+          bbox_radius = gaussian_radius((math.ceil(bbox_h), math.ceil(bbox_w)))
+          bbox_radius = max(0, int(bbox_radius))
+          bbox_radius = self.opt.hm_gauss if self.opt.mse_loss else radius
+          bbox_ct = np.array(
+            [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2], dtype=np.float32)
+          bbox_ct_int = bbox_ct.astype(np.int32)
+          draw_gaussian(face_hm[cls_id], bbox_ct_int, bbox_radius)
+        
     # print("vp_trans_out.shape",f'{vp_trans_out.shape}') 
     # print("ct_int",f'{ct_int}') 
     # vp_trans_out[ct_int[1],ct_int[0]] = 1
@@ -274,6 +330,11 @@ class CTDet_gazeDataset(data.Dataset):
       ret.update({'reg': reg})
     if self.opt.face_grid:
       ret.update({'face_grid': face_grid})
+    if self.opt.face_hm_head: 
+      ret.update({'face_bbox': bbox})
+      ret.update({'face_hm': face_hm})  
+    
+    
     if self.opt.debug > 0 or not self.split == 'train':
     # if self.opt.debug > 0:
       gt_det = np.array(gt_det, dtype=np.float32) if len(gt_det) > 0 else \

@@ -117,7 +117,7 @@ class opts(object):
                              help='batch size on the master gpu.')
     self.parser.add_argument('--num_iters', type=int, default=-1,
                              help='default: #samples / batch_size.')
-    self.parser.add_argument('--val_intervals', type=int, default=2,
+    self.parser.add_argument('--val_intervals', type=int, default=1,
                              help='number of epochs to run validation.')
     self.parser.add_argument('--trainval', action='store_true',
                              help='include validation in training and '
@@ -384,6 +384,14 @@ class opts(object):
       if opt.reg_offset:
         opt.heads.update({'reg': 2})
     elif opt.task == 'ctdet_gaze':
+      # assert opt.dataset in ['mpiifacegaze']
+      opt.heads = {'hm': opt.num_classes}
+      if opt.reg_offset:
+        opt.heads.update({'reg': 2})
+      if opt.pog_offset:
+        opt.heads.update({'pog': 1})
+
+    elif opt.task == 'ctdet_gazeface':
       # assert opt.dataset in ['mpiifacegaze']
       opt.heads = {'hm': opt.num_classes}
       if opt.reg_offset:

@@ -125,9 +125,23 @@ def test(model, test_loader, opt):
             
             batch_image = batch_image[0].detach().cpu().numpy()
             batch_image = batch_image.transpose(1, 2, 0)
-            # plt.imshow(batch_image)
+            
+            print(batch_image.shape)
+            plt.figure(figsize=(12, 4))
+            plt.subplot(1, 2, 1)
+            plt.imshow(batch_image)
             # plt.axis('off')  # 关闭坐标轴
             # plt.show()
+            if opt.face_hm_head: 
+
+                batch_face_hm = batch["face_hm"]
+                batch_face_hm = batch_face_hm[0].detach().cpu().numpy()
+                batch_face_hm = batch_face_hm.transpose(1,2,0)
+                plt.subplot(1, 2, 2)
+                plt.imshow(batch_face_hm)
+                # plt.axis('off')  # 关闭坐标轴
+                plt.show()
+            
             
             # plt.figure(figsize=(16, 4))
             # plt.subplot(1, 3, 1)
@@ -411,9 +425,12 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_sc_kr/model_5.pth"
     
     
+    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/resdcnface_18/gaze_eve_resdcnface_18_eve_ep20/model_2.pth"
+    
+    
     #### cross evaluation  ####
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_test_himax_sc_kr_mono/model_2.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_impii_resdcn18_p05_test_himax_sc_kr_mono/model_44.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_impii_resdcn18_p05_test_himax_sc_kr_mono/model_44.pth"
     
     model = load_model(model, model_path)
     # if opt.load_model != '':

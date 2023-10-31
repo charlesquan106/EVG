@@ -111,6 +111,23 @@ def main(opt):
       # plt.imshow(sample_face_hm, cmap="gray")
       # plt.title('face hm')
       # plt.show()
+      
+    vis_hm = 1
+    if vis_hm: 
+
+      sample_hm_d = sample["hm_d"]
+      sample_hm_d = sample_hm_d.transpose(1,2,0)
+      
+      
+      plt.figure(figsize=(14, 4))
+      plt.subplot(1, 2, 1)
+      plt.imshow(sample_hm, cmap="gray")
+      plt.title('sample_hm')
+      
+      plt.subplot(1, 2, 2)
+      plt.imshow(sample_hm_d, cmap="gray")
+      plt.title('sample_hm_d')
+      plt.show()
     
     
   

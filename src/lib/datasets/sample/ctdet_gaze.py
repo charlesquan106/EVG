@@ -15,6 +15,51 @@ from utils.image import draw_dense_reg
 import math
 
 
+def create_gaze_heatmap(centre, sigma=10.0, gaze_heatmap_size=(256, 144), actual_screen_size=(1920, 1080), guassian_blur=(15,15)):
+    #centre, sigma = (1300, 690), 10.0
+    #gaze_heatmap_size = 256, 144
+    #actual_screen_size = 1920, 1080
+
+    # w, h = 256, 144 # initial heatmap size
+    # xs = np.arange(0, w, step=1, dtype=np.float32)
+    # ys = np.expand_dims(np.arange(0, h, step=1, dtype=np.float32), -1)
+    w, h = gaze_heatmap_size[0], gaze_heatmap_size[1] # initial heatmap size
+    xs = np.arange(0, w, step=1, dtype=np.float32)
+    ys = np.expand_dims(np.arange(0, h, step=1, dtype=np.float32), -1)
+    heatmap_xs = xs
+    heatmap_ys = ys
+    #heatmap_xs = torch.tensor(xs).cuda()
+    #heatmap_ys = torch.tensor(ys).cuda()
+
+    heatmap_alpha = -0.5 / (sigma ** 2)
+    # cx = (w / actual_screen_size[0]) * centre[0]
+    # cy = (h / actual_screen_size[1]) * centre[1]
+    
+    cx = centre[0]
+    cy = centre[1]
+    print("cx , cy = ",cx ,cy)
+    #st()
+    heatmap = np.exp(heatmap_alpha * ((heatmap_xs - cx)**2 + (heatmap_ys - cy)**2))
+    heatmap = cv2.GaussianBlur(heatmap, guassian_blur, 1)
+    if (w, h) != gaze_heatmap_size:
+        heatmap = cv2.resize(heatmap, gaze_heatmap_size)
+    heatmap = normalise_arr(heatmap)
+    #heatmap = 1e-8 + heatmap  # Make the zeros non-zero (remove collapsing issue)
+    # heatmap_on = torch.tensor(heatmap).cuda()
+    # heatmap.unsqueeze(0)
+    # plt.imshow(heatmap, origin='upper')
+    # plt.show()
+    # heatmap.shape
+    print("create_gaze_heatmap shape = ",heatmap.shape)
+    return heatmap
+  
+def normalise_arr(arr):
+  mmax, mmin = np.max(arr), np.min(arr)
+  assert mmax > mmin
+  arr = (arr - mmin +1e-8)/(mmax - mmin + 2e-8)
+  return arr
+
+
 class CTDet_gazeDataset(data.Dataset):
   def _get_border(self, border, size):
     i = 1
@@ -117,6 +162,7 @@ class CTDet_gazeDataset(data.Dataset):
     num_classes = self.num_classes
   
     hm = np.zeros((num_classes, output_h, output_w), dtype=np.float32)
+    hm_d = np.zeros((num_classes, output_h, output_w), dtype=np.float32)
     reg = np.zeros((self.max_objs, 2), dtype=np.float32)
     ind = np.zeros((self.max_objs), dtype=np.int64)
     reg_mask = np.zeros((self.max_objs), dtype=np.uint8)
@@ -288,7 +334,11 @@ class CTDet_gazeDataset(data.Dataset):
         ct = np.array([ vp_gazepoint_output[0], vp_gazepoint_output[1]], dtype=np.float32)
         ct_int = ct.astype(np.int32)
         draw_gaussian(hm[cls_id], ct_int, radius)
+        # print("ct_int = ", ct_int)
         
+        # hm_d[cls_id] = create_gaze_heatmap(ct_int, gaze_heatmap_size = (output_w, output_h),actual_screen_size = (vp_width, vp_height),guassian_blur = (5,5))
+        
+
         # hm_gazepoint_idx = np.where(hm[cls_id] == 20)
         # print(f"hm_gazepoint_idx: {hm_gazepoint_idx}")
         
@@ -353,7 +403,7 @@ class CTDet_gazeDataset(data.Dataset):
     # hm  = hm + vp_trans_out
     
     # ret = {'input': inp, 'hm': hm, 'reg_mask': reg_mask, 'ind': ind, 'vp' : vp}
-    ret = {'input': inp, 'hm': hm, 'reg_mask': reg_mask, 'ind': ind}
+    ret = {'input': inp, 'hm': hm, 'reg_mask': reg_mask, 'ind': ind, 'hm_d': hm_d}
     if self.opt.reg_offset:
       ret.update({'reg': reg})
     if self.opt.face_grid:

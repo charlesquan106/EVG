@@ -12,6 +12,7 @@ from .dataset.coco import COCO
 from .dataset.mpiifacegaze import MpiiFaceGaze
 from .dataset.gazecapture import GazeCapture
 from .dataset.eve import EVE
+from .dataset.himax import Himax
 from .dataset.pascal import PascalVOC
 from .dataset.kitti import KITTI
 from .dataset.coco_hp import COCOHP
@@ -22,6 +23,7 @@ dataset_factory = {
   'mpiifacegaze': MpiiFaceGaze,
   'gazecapture': GazeCapture,
   'eve': EVE,
+  'himax': Himax,
   'pascal': PascalVOC,
   'kitti': KITTI,
   'coco_hp': COCOHP
@@ -31,6 +33,7 @@ _sample_factory = {
   'exdet': EXDetDataset,
   'ctdet': CTDetDataset,
   'ctdet_gaze': CTDet_gazeDataset,
+  'ctdet_gazeface': CTDet_gazeDataset,
   'ddd': DddDataset,
   'multi_pose': MultiPoseDataset
 }

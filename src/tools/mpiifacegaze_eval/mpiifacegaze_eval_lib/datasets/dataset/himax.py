@@ -10,7 +10,7 @@ import os
 
 import torch.utils.data as data
 
-class EVE(data.Dataset):
+class Himax(data.Dataset):
   num_classes = 1
   default_resolution = [512, 512]
   mean = np.array([0.485, 0.456, 0.406],
@@ -24,15 +24,21 @@ class EVE(data.Dataset):
   #                  dtype=np.float32).reshape(1, 1, 3)
 
   def __init__(self, opt, split):
-    super(EVE, self).__init__()
-    self.data_dir = os.path.join(opt.data_dir, 'gaze_EVE_ffmpeg_ld')
-    self.img_dir = os.path.join(self.data_dir, 'images')
-    # self.img_dir = os.path.join(self.data_dir, 'images_himax_test_all')
-    # _ann_name = {'train': f'train', 'val': f'val'}
-    _ann_name = {'train': f'train', 'val': f'val'}
+    super(Himax, self).__init__()
+    self.data_dir = os.path.join(opt.data_dir, 'gaze_Himax')
+    # self.img_dir = os.path.join(self.data_dir, 'images')
+    _ann_name = {'train': f'train_p{opt.data_train_person_id:02}', 'val': f'himax_facecrop_all_test'}
+    # _ann_name = {'train': f'himax_facecrop_all_test', 'val': f'himax_facecrop_all_test'}
     self.annot_path = os.path.join(
       self.data_dir, 'annotations', 
       'gaze_{}.json').format(_ann_name[split])
+    
+    _images_name = {'train': f'MPII', 'val': f'himax_facecrop_all_test'}
+    # _images_name = {'train': f'himax_facecrop_all_test', 'val': f'himax_facecrop_all_test'}
+    self.img_dir = os.path.join(
+      self.data_dir,'images_{}').format(_images_name[split])
+
+    
     self.max_objs = 1
     self.class_name = ['__background__', "gaze"]
     # self._valid_ids = np.arange(1, 21, dtype=np.int32)
@@ -49,10 +55,8 @@ class EVE(data.Dataset):
     self.split = split
     self.opt = opt
     
-    self.filtered_indices = []
-    
 
-    print('==> initializing EVE {} data.'.format(_ann_name[split]))
+    print('==> initializing himax {} data.'.format(_ann_name[split]))
     self.coco = coco.COCO(self.annot_path)
     self.images = sorted(self.coco.getImgIds())
     self.num_samples = len(self.images)
@@ -89,10 +93,6 @@ class EVE(data.Dataset):
     # json.dump(detections, open(result_json, "w"))
 
     self.save_results(results, save_dir)
-    os.system('python tools/EVE_eval/evaluate.py ' + \
+    os.system('python tools/mpiifacegaze_eval/evaluate.py ' + \
               '{}/results.json'.format(save_dir))
-    
-  def show_filter_data(self):
-
-    return self.filtered_indices
 
