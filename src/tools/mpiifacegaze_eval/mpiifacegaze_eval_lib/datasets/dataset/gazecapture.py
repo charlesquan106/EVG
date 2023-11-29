@@ -25,7 +25,7 @@ class GazeCapture(data.Dataset):
 
   def __init__(self, opt, split):
     super(GazeCapture, self).__init__()
-    self.data_dir = os.path.join(opt.data_dir, 'gaze_GazeCapture')
+    self.data_dir = os.path.join(opt.data_dir, 'gaze_GazeCapture_ld')
     self.img_dir = os.path.join(self.data_dir, 'images')
     _ann_name = {'train': f'train', 'val': f'test'}
     self.annot_path = os.path.join(

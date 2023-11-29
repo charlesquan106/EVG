@@ -10,7 +10,7 @@ import os
 
 import torch.utils.data as data
 
-class GazeCapture(data.Dataset):
+class Cross_MPII_Himax(data.Dataset):
   num_classes = 1
   default_resolution = [512, 512]
   mean = np.array([0.485, 0.456, 0.406],
@@ -24,13 +24,25 @@ class GazeCapture(data.Dataset):
   #                  dtype=np.float32).reshape(1, 1, 3)
 
   def __init__(self, opt, split):
-    super(GazeCapture, self).__init__()
-    self.data_dir = os.path.join(opt.data_dir, 'gaze_GazeCapture_ld')
-    self.img_dir = os.path.join(self.data_dir, 'images')
-    _ann_name = {'train': f'train', 'val': f'test'}
+    super(Cross_MPII_Himax, self).__init__()
+    
+    _data_name = {'train': f'gaze_MPIIFaceGaze', 'val': f'gaze_Himax'}
+    self.data_dir = os.path.join(
+      opt.data_dir,'{}').format(_data_name[split])
+    
+    
+    # self.data_dir = os.path.join(opt.data_dir, 'gaze_MPIIFaceGaze')
+    # self.img_dir = os.path.join(self.data_dir, 'images')
+    _ann_name = {'train': f'train_p{opt.data_train_person_id:02}', 'val': f'Himax_all_test'}
     self.annot_path = os.path.join(
       self.data_dir, 'annotations', 
       'gaze_{}.json').format(_ann_name[split])
+    
+    
+    _images_name = {'train': f'MPII', 'val': f'Himax_all_test'}
+    self.img_dir = os.path.join(
+      self.data_dir,'images_{}').format(_images_name[split])
+    
     self.max_objs = 1
     self.class_name = ['__background__', "gaze"]
     # self._valid_ids = np.arange(1, 21, dtype=np.int32)
@@ -48,7 +60,7 @@ class GazeCapture(data.Dataset):
     self.opt = opt
     
 
-    print('==> initializing GazeCapture {} data.'.format(_ann_name[split]))
+    print('==> initializing EVE {} data.'.format(_ann_name[split]))
     self.coco = coco.COCO(self.annot_path)
     self.images = sorted(self.coco.getImgIds())
     self.num_samples = len(self.images)
@@ -85,6 +97,6 @@ class GazeCapture(data.Dataset):
     # json.dump(detections, open(result_json, "w"))
 
     self.save_results(results, save_dir)
-    os.system('python tools/GazeCapture_eval/evaluate.py ' + \
+    os.system('python tools/Cross_EVE_Himax_eval/evaluate.py ' + \
               '{}/results.json'.format(save_dir))
 

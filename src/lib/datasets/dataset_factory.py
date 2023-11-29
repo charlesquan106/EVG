@@ -13,6 +13,8 @@ from .dataset.mpiifacegaze import MpiiFaceGaze
 from .dataset.gazecapture import GazeCapture
 from .dataset.eve import EVE
 from .dataset.himax import Himax
+from .dataset.cross_eve_himax import Cross_EVE_Himax
+from .dataset.cross_mpii_himax import Cross_MPII_Himax
 from .dataset.pascal import PascalVOC
 from .dataset.kitti import KITTI
 from .dataset.coco_hp import COCOHP
@@ -24,6 +26,8 @@ dataset_factory = {
   'gazecapture': GazeCapture,
   'eve': EVE,
   'himax': Himax,
+  'cross_eve_himax': Cross_EVE_Himax,
+  'cross_mpii_himax': Cross_MPII_Himax,
   'pascal': PascalVOC,
   'kitti': KITTI,
   'coco_hp': COCOHP

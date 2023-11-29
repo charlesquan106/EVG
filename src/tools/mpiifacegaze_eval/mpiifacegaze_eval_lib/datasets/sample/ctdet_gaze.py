@@ -200,6 +200,60 @@ class CTDet_gazeDataset(data.Dataset):
           camera_screen_x_offset = 0
           camera_screen_y_offset = 0
           
+          
+      elif self.opt.dataset == "himax" :
+        
+          # val himax in pixel 
+          if self.opt.camera_screen_pos:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = sc_height/2 + 78* vp_pixel_per_mm 
+            # 78 mm camera to screen
+            # print(camera_screen_y_offset)
+          else:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = 0
+            
+      elif self.opt.dataset == "cross_eve_himax" :
+
+        if self.split == 'train':
+          # train eve in pixel   
+          if self.opt.camera_screen_pos:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = sc_height/2
+          else:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = 0
+        else:
+          # val himax in pixel 
+          if self.opt.camera_screen_pos:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = sc_height/2 + 78* vp_pixel_per_mm 
+            # 78 mm camera to screen
+          else:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = 0
+            
+      elif self.opt.dataset == "cross_mpii_himax" :
+
+        if self.split == 'train':
+          # train mpii in pixel   
+          if self.opt.camera_screen_pos:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = sc_height/2
+          else:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = 0
+        else:
+          # val himax in pixel 
+          if self.opt.camera_screen_pos:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = sc_height/2 + 78* vp_pixel_per_mm 
+            # 78 mm camera to screen
+          else:
+            camera_screen_x_offset = 0
+            camera_screen_y_offset = 0
+      
+      
       else :
         # mpiifacegaze in pixel 
         if self.opt.camera_screen_pos:
