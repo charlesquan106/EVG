@@ -161,10 +161,7 @@ class opts(object):
     self.parser.add_argument('--no_color_aug', action='store_true',
                              help='not use the color augmenation '
                                   'from CornerNet')
-    self.parser.add_argument('--shift_gaze_point_aug',action='store_true',
-                             help='use the shift_gaze_point augmenation ')
-    self.parser.add_argument('--shift_gaze_point_ratio', type = float, default=0.5,
-                             help='probability of applying shift_gaze_point augmentation')
+
     
     # multi_pose
     self.parser.add_argument('--aug_rot', type=float, default=0, 
