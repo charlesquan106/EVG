@@ -86,15 +86,16 @@ def main(opt):
     sample_hm = sample["hm"]
     sample_hm = sample_hm.transpose(1,2,0)
     
-    # plt.figure(figsize=(14, 4))
-    # plt.subplot(1, 2, 1)
-    # plt.imshow(sample_input)
-    # plt.title('input image')
+    plt.figure(figsize=(14, 4))
+    plt.subplot(1, 2, 1)
+    plt.imshow(sample_input)
+    plt.title('input image')
     
-    # plt.subplot(1, 2, 2)
-    # plt.imshow(sample_hm, cmap="gray")
-    # plt.title('gaze hm')
-    # plt.show()
+    plt.subplot(1, 2, 2)
+    plt.imshow(sample_hm, cmap="gray")
+    plt.title('gaze hm')
+    plt.show()
+    
     
     if opt.face_hm_head: 
 
@@ -112,22 +113,6 @@ def main(opt):
       # plt.title('face hm')
       # plt.show()
       
-    vis_hm = 1
-    if vis_hm: 
-
-      sample_hm_d = sample["hm_d"]
-      sample_hm_d = sample_hm_d.transpose(1,2,0)
-      
-      
-      plt.figure(figsize=(14, 4))
-      plt.subplot(1, 2, 1)
-      plt.imshow(sample_hm, cmap="gray")
-      plt.title('sample_hm')
-      
-      plt.subplot(1, 2, 2)
-      plt.imshow(sample_hm_d, cmap="gray")
-      plt.title('sample_hm_d')
-      plt.show()
     
     
   

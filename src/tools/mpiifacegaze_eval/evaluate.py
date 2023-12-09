@@ -103,6 +103,8 @@ def test(model, test_loader, opt):
     L2_mm_errors = AverageMeter()
     x_pixel_errors = AverageMeter()
     y_pixel_errors = AverageMeter()
+    x_mm_errors = AverageMeter()
+    y_mm_errors = AverageMeter()
     
     losses_gaze = AverageMeter()
     update_heatmap = UpdateHeatmap(opt.vp_w,opt.vp_h)
@@ -115,7 +117,7 @@ def test(model, test_loader, opt):
         for iter_id, batch in enumerate(test_loader):
             print(f"Iteration {iter_id}/ {len(test_loader)}",end="\r")
             
-            # if iter_id > 500:
+            # if iter_id > 2000:
             #     break
             
             for k in batch:
@@ -256,6 +258,13 @@ def test(model, test_loader, opt):
             
             x_pixel_errors.update(error_x)
             y_pixel_errors.update(error_y)
+            x_mm_error = error_x*(mm_per_pixel)
+            x_mm_error = x_mm_error.mean()
+            x_mm_errors.update(x_mm_error)
+            y_mm_error = error_y*(mm_per_pixel)
+            y_mm_error = y_mm_error.mean()
+            y_mm_errors.update(y_mm_error)
+            
             
             L2_mm_error = torch.sqrt(error*(mm_per_pixel**2))
             L2_mm_error = L2_mm_error.mean()
@@ -346,6 +355,8 @@ def test(model, test_loader, opt):
     mean_L2_pixel_errors = L2_pixel_errors.avg
     mean_x_pixel_errors = x_pixel_errors.avg
     mean_y_pixel_errors = y_pixel_errors.avg
+    mean_x_mm_errors = x_mm_errors.avg
+    mean_y_mm_errors = y_mm_errors.avg
     mean_L2_mm_errors = L2_mm_errors.avg
     
     # Creating histogram
@@ -389,14 +400,18 @@ def test(model, test_loader, opt):
     # plt.yticks(np.arange(0, max(hist) + 1))  # 設定刻度，此處以 1 為間隔
 
     # 顯示圖形
-    plt.show()
+    # plt.show()
     
     
+    print(f'The mean error distance (pixel) / (mm): {mean_L2_pixel_errors:.2f} / {mean_L2_mm_errors:.2f}')
+    print(f'The mean error x (pixel) / (mm): {mean_x_pixel_errors:.2f} / {mean_x_mm_errors:.2f} ')
+    print(f'The mean error y (pixel) / (mm): {mean_y_pixel_errors:.2f} / {mean_y_mm_errors:.2f}')
+    # print(f'The mean error distance (mm): {mean_L2_mm_errors:.2f}')
 
 
 
             
-    return mean_L2_pixel_errors, mean_L2_mm_errors, mean_x_pixel_errors, mean_y_pixel_errors
+    # return mean_L2_pixel_errors, mean_L2_mm_errors, mean_x_pixel_errors, mean_y_pixel_errors
 
 
 def main(opt):
@@ -469,13 +484,15 @@ def main(opt):
     #### cross mpii vs himax ####
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_cross_mpii_himax_gray/model_1.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_impii_resdcn18_p05_test_himax_sc_kr_mono/model_44.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/cross_mpii_himax/resdcn_18/gaze_cross_mpii_himax_laptop_gray_vp_large/model_12.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/cross_mpii_himax/resdcn_18/gaze_cross_mpii_himax_laptop_gray_vp_large/model_12.pth"
     
     
     #### cross eve vs himax ####
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_test_himax_sc_kr_mono/model_2.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/cross_eve_himax/gaze_cross_eve_himax_gray/model_1.pth"
     
+    #### cross pretrain eve  himax ####
+    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_gray_lr125_4_decay/model_10.pth"
     
     model = load_model(model, model_path)
     # if opt.load_model != '':
@@ -565,13 +582,14 @@ def main(opt):
     # model.load_state_dict(checkpoint['model'])
     
 
-    L2_pixel_error,L2_mm_error,x_pixel_error,y_pixel_error = test(model, test_loader, opt)
+    # L2_pixel_error,L2_mm_error,x_pixel_error,y_pixel_error = test(model, test_loader, opt)
+    test(model, test_loader, opt)
     # print(L2_distance.shape)
 
-    print(f'The mean error distance (pixel): {L2_pixel_error:.2f}')
-    print(f'The mean error x (pixel): {x_pixel_error:.2f}')
-    print(f'The mean error y (pixel): {y_pixel_error:.2f}')
-    print(f'The mean error distance (mm): {L2_mm_error:.2f}')
+    # print(f'The mean error distance (pixel): {L2_pixel_error:.2f}')
+    # print(f'The mean error x (pixel): {x_pixel_error:.2f}')
+    # print(f'The mean error y (pixel): {y_pixel_error:.2f}')
+    # print(f'The mean error distance (mm): {L2_mm_error:.2f}')
 
     # output_path = output_dir / 'predictions.npy'
     # np.save(output_path, predictions.numpy())

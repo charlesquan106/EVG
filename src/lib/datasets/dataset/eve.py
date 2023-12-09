@@ -18,6 +18,11 @@ class EVE(data.Dataset):
   std  = np.array([0.229, 0.224, 0.225],
                    dtype=np.float32).reshape(1, 1, 3)
   
+  # mean = np.array([0.2766, 0.3915, 0.1913],
+  #                  dtype=np.float32).reshape(1, 1, 3)
+  # std  = np.array([0.1928, 0.1953, 0.1450],
+  #                  dtype=np.float32).reshape(1, 1, 3)
+  
   # mean = np.array([1, 1, 1],
   #                  dtype=np.float32).reshape(1, 1, 3)
   # std  = np.array([1, 1, 1],

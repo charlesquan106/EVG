@@ -12,6 +12,7 @@ from utils.image import flip, color_aug
 from utils.image import get_affine_transform, affine_transform
 from utils.image import gaussian_radius, draw_umich_gaussian, draw_msra_gaussian
 from utils.image import draw_dense_reg
+from utils.image import get_paste_kernel, gkern
 import math
 
 
@@ -37,7 +38,7 @@ def create_gaze_heatmap(centre, sigma=10.0, gaze_heatmap_size=(256, 144), actual
     
     cx = centre[0]
     cy = centre[1]
-    print("cx , cy = ",cx ,cy)
+    # print("cx , cy = ",cx ,cy)
     #st()
     heatmap = np.exp(heatmap_alpha * ((heatmap_xs - cx)**2 + (heatmap_ys - cy)**2))
     heatmap = cv2.GaussianBlur(heatmap, guassian_blur, 1)
@@ -162,7 +163,6 @@ class CTDet_gazeDataset(data.Dataset):
     num_classes = self.num_classes
   
     hm = np.zeros((num_classes, output_h, output_w), dtype=np.float32)
-    hm_d = np.zeros((num_classes, output_h, output_w), dtype=np.float32)
     reg = np.zeros((self.max_objs, 2), dtype=np.float32)
     ind = np.zeros((self.max_objs), dtype=np.int64)
     reg_mask = np.zeros((self.max_objs), dtype=np.uint8)
@@ -357,12 +357,25 @@ class CTDet_gazeDataset(data.Dataset):
       # print(vp_gazepoint_output)
       h, w = self.opt.vp_heatmap_hw, self.opt.vp_heatmap_hw
       if h > 0 and w > 0:
-        radius = gaussian_radius((math.ceil(h), math.ceil(w)))
-        radius = max(0, int(radius))
-        radius = self.opt.hm_gauss if self.opt.mse_loss else radius
-        ct = np.array([ vp_gazepoint_output[0], vp_gazepoint_output[1]], dtype=np.float32)
-        ct_int = ct.astype(np.int32)
-        draw_gaussian(hm[cls_id], ct_int, radius)
+        gaussian_kernel = 0
+        if gaussian_kernel:
+          kernel_map = gkern(51, 3)
+          ct = np.array([ vp_gazepoint_output[0], vp_gazepoint_output[1]], dtype=np.float32)
+          ct_int = ct.astype(np.int32)
+          # print(kernel_map.shape)
+          # print("h,w", hm.shape[2] , w)
+          hm[cls_id] = get_paste_kernel((output_h, output_w), ct_int, kernel_map, (output_h, output_w))
+        
+        
+        else:
+          radius = gaussian_radius((math.ceil(h), math.ceil(w)))
+          radius = max(0, int(radius))
+          radius = self.opt.hm_gauss if self.opt.mse_loss else radius
+          ct = np.array([ vp_gazepoint_output[0], vp_gazepoint_output[1]], dtype=np.float32)
+          ct_int = ct.astype(np.int32)
+          draw_gaussian(hm[cls_id], ct_int, radius)
+        
+        
         # print("ct_int = ", ct_int)
         
         # hm_d[cls_id] = create_gaze_heatmap(ct_int, gaze_heatmap_size = (output_w, output_h),actual_screen_size = (vp_width, vp_height),guassian_blur = (5,5))
@@ -432,7 +445,7 @@ class CTDet_gazeDataset(data.Dataset):
     # hm  = hm + vp_trans_out
     
     # ret = {'input': inp, 'hm': hm, 'reg_mask': reg_mask, 'ind': ind, 'vp' : vp}
-    ret = {'input': inp, 'hm': hm, 'reg_mask': reg_mask, 'ind': ind, 'hm_d': hm_d}
+    ret = {'input': inp, 'hm': hm, 'reg_mask': reg_mask, 'ind': ind}
     if self.opt.reg_offset:
       ret.update({'reg': reg})
     if self.opt.face_grid:
