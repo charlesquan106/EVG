@@ -10,9 +10,8 @@ file_params = [
     # "ctdet_gaze --exp_id gaze_eve_sc_kr_test  --arch resdcn_18 --dataset eve  --num_epochs 20 --vp_h 2160 --vp_w 3840 --vp_pixel_per_mm 3.3 --camera_screen_pos --keep_res --resize_raw_image --resize_raw_image_h 270 --resize_raw_image_w 480 --not_data_train_val_exclude",
     
     # "ctdet_gaze --exp_id gaze_impii_resdcn18_p05_test_himax_laptop_sc_kr_mono_vp_large --arch resdcn_18 --dataset himax   --num_epochs 70 --lr_step 45,60 --keep_res --resize_raw_image --camera_screen_pos --resize_raw_image_h 270 --resize_raw_image_w 480 --vp_h 2400 --vp_w 6200 --vp_pixel_per_mm 0 --data_train_person_id  5 --data_test_person_id  5 --gray_image",
-    "ctdet_gaze --exp_id gaze_eve_pl0001_1 --arch resdcn_18 --dataset eve --num_epochs 20 --vp_h 2360 --vp_w 3840 --vp_pixel_per_mm 3.3 --keep_res --resize_raw_image --resize_raw_image_h 360 --resize_raw_image_w 640 --camera_screen_pos --pog_offset --pog_weight 0.001",
-    "ctdet_gaze --exp_id gaze_eve_pl001_1 --arch resdcn_18 --dataset eve --num_epochs 20 --vp_h 2360 --vp_w 3840 --vp_pixel_per_mm 3.3 --keep_res --resize_raw_image --resize_raw_image_h 360 --resize_raw_image_w 640 --camera_screen_pos --pog_offset --pog_weight 0.01"   ,
-    "ctdet_gaze --exp_id gaze_eve_pl01_1 --arch resdcn_18 --dataset eve --num_epochs 20 --vp_h 2360 --vp_w 3840 --vp_pixel_per_mm 3.3 --keep_res --resize_raw_image --resize_raw_image_h 360 --resize_raw_image_w 640 --camera_screen_pos --pog_offset --pog_weight 0.1" ,
+    "ctdet_gaze --exp_id gaze_gazecapture_ep70_all_adapt_r_no_csp_resCBAM  --arch resCBAM_18 --dataset gazecapture --num_epochs 30 --vp_pixel_per_mm 5 --vp_h 2400 --vp_w 2400 --batch_size 64",
+    "ctdet_gaze --exp_id gaze_gazecapture_ep70_all_adapt_r_no_csp_res  --arch res_18 --dataset gazecapture --num_epochs 30 --vp_pixel_per_mm 5 --vp_h 2400 --vp_w 2400 --batch_size 64"   ,
     
     
     # "ctdet_gaze --exp_id gaze_impii_resdcn18_p05_test_himax_sc_kr_mono --arch resdcn_18 --dataset mpiifacegaze   --num_epochs 70 --lr_step 45,60 --keep_res --resize_raw_image --camera_screen_pos --resize_raw_image_h 270 --resize_raw_image_w 480 --vp_h 2100 --vp_w 3360 --vp_pixel_per_mm 5 --data_train_person_id  5 --data_test_person_id  5 --gray_image",

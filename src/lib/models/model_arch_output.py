@@ -14,21 +14,29 @@ from torchvision.models import resnet50, ResNet50_Weights
 
 # from networks.msra_resnet import get_pose_net
 # from networks.msra_resnet_cut import get_pose_net
+from networks.msra_resnet_CBAM import get_pose_net_CBAM as get_pose_net 
 # from networks.resnet_dcn import get_pose_net 
 # from networks.resnet_dcn_cut import get_pose_net 
-from networks.resnet_dcn_face import get_pose_net_dcn_face 
+# from networks.resnet_dcn_face import get_pose_net_dcn_face 
+# from networks.resnet_dcn_face_CBAM import get_pose_net_dcn_face_CBAM as get_pose_net 
 # from networks.eff_v2_s import get_pose_net 
 # from networks.mob_v2 import get_pose_net
 # from networks.mob_v3_s import get_pose_net
 # from networks.mob_v3_l import get_pose_net
-# import torchvision.models as models      
+# import torchvision.models as models    
 
+# from networks.msra_resnet_CBAM import get_pose_net_CBAM as get_pose_net   
 
 import torch 
 from thop import profile
 from torchsummary import summary
 
 from torchstat import stat
+# calflops
+from calflops import calculate_flops
+
+from thop import profile
+
 
 # img = read_image("/home/owenserver/Python/CenterNet_gaze/src/tools/grace_hopper_517x606.jpg")
 
@@ -47,26 +55,34 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # model = get_pose_net_dcn_face(num_layers,heads,head_conv).to(device)
 # model = get_pose_net_dcn(num_layers,heads,head_conv).to(device)
 
+model = get_pose_net(num_layers,heads,head_conv)
+
+
 # model = get_pose_net(num_layers,heads,head_conv)
 # model = get_pose_net(num_layers= num_layers, heads =heads ).to(device)
 
 
 # model = get_pose_net_dcn_face(num_layers,heads,head_conv)
-model = get_pose_net_dcn_face(num_layers= num_layers, heads =heads ).to(device)
+# model = get_pose_net_dcn_face(num_layers= num_layers, heads =heads ).to(device)
 
 # model = models.mobilenet_v2()
 # summary(model, input_size=  (3,480,272))
 # summary(model, input_size=  (3,224,224))
-summary(model, input_size=  (3,512,512))
+# summary(model, input_size=  (3,512,512))
 # summary(model, input_size=  (3,672,384))
 
 
-
+#######  torchstat import stat  #######
 # stat(model, (3, 480, 272))
-
-
 # input = torch.randn(1, 3, 480,272)
 # flops, params = profile(model, inputs=(input, ))
 # print("flops ",flops)
 # print("params",params)
+
+
+######  calflops import calculate_flops  #######
+flops, macs, params = calculate_flops(model, input_shape=(1, 3, 480, 272))
+print("flops ",flops)
+print("macs ",macs)
+print("params",params)
 

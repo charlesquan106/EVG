@@ -117,7 +117,7 @@ def test(model, test_loader, opt):
         for iter_id, batch in enumerate(test_loader):
             print(f"Iteration {iter_id}/ {len(test_loader)}",end="\r")
             
-            # if iter_id > 2000:
+            # if iter_id > 200:
             #     break
             
             for k in batch:
@@ -476,6 +476,9 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/resdcnface_18/gaze_eve_resdcnface_18_eve_ep20/model_2.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/resdcnface_18/gaze_eve_resdcnface_18_eve_ep10_f20/model_1.pth"
     
+    #### gazecapture ####    
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/gazecapture/resdcn_18/gaze_gazecapture_ep70_all_hm_adapt_r_no_csp/model_15.pth"
+    
     #### gazecapture - face ####
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/gazecapture/resdcnface_18/gaze_gc_resdcnface_18_all_f2/model_14.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/gazecapture/resdcnface_18/gaze_gc_resdcnface_18_all_f025/model_18.pth"
@@ -492,7 +495,11 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/cross_eve_himax/gaze_cross_eve_himax_gray/model_1.pth"
     
     #### cross pretrain eve  himax ####
-    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_gray_lr125_4_decay/model_10.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_gray_lr125_4_decay/model_10.pth"
+    
+     #### cross pretrain mpii  himax ####   
+    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_gray/model_2.pth"
+    
     
     model = load_model(model, model_path)
     # if opt.load_model != '':

@@ -14,51 +14,29 @@ from utils.image import gaussian_radius, draw_umich_gaussian, draw_msra_gaussian
 from utils.image import draw_dense_reg
 from utils.image import get_paste_kernel, gkern
 import math
+import matplotlib.pyplot as plt
 
+def kernel_std_cal(gaussian_bbox, img_height, img_width, bias = 0.5 ,weight = 3 ):
 
-def create_gaze_heatmap(centre, sigma=10.0, gaze_heatmap_size=(256, 144), actual_screen_size=(1920, 1080), guassian_blur=(15,15)):
-    #centre, sigma = (1300, 690), 10.0
-    #gaze_heatmap_size = 256, 144
-    #actual_screen_size = 1920, 1080
-
-    # w, h = 256, 144 # initial heatmap size
-    # xs = np.arange(0, w, step=1, dtype=np.float32)
-    # ys = np.expand_dims(np.arange(0, h, step=1, dtype=np.float32), -1)
-    w, h = gaze_heatmap_size[0], gaze_heatmap_size[1] # initial heatmap size
-    xs = np.arange(0, w, step=1, dtype=np.float32)
-    ys = np.expand_dims(np.arange(0, h, step=1, dtype=np.float32), -1)
-    heatmap_xs = xs
-    heatmap_ys = ys
-    #heatmap_xs = torch.tensor(xs).cuda()
-    #heatmap_ys = torch.tensor(ys).cuda()
-
-    heatmap_alpha = -0.5 / (sigma ** 2)
-    # cx = (w / actual_screen_size[0]) * centre[0]
-    # cy = (h / actual_screen_size[1]) * centre[1]
+    min_img = min(img_height,img_width)
+    min_bbox = min(gaussian_bbox[2]-gaussian_bbox[0],gaussian_bbox[3]-gaussian_bbox[1])
     
-    cx = centre[0]
-    cy = centre[1]
-    # print("cx , cy = ",cx ,cy)
-    #st()
-    heatmap = np.exp(heatmap_alpha * ((heatmap_xs - cx)**2 + (heatmap_ys - cy)**2))
-    heatmap = cv2.GaussianBlur(heatmap, guassian_blur, 1)
-    if (w, h) != gaze_heatmap_size:
-        heatmap = cv2.resize(heatmap, gaze_heatmap_size)
-    heatmap = normalise_arr(heatmap)
-    #heatmap = 1e-8 + heatmap  # Make the zeros non-zero (remove collapsing issue)
-    # heatmap_on = torch.tensor(heatmap).cuda()
-    # heatmap.unsqueeze(0)
-    # plt.imshow(heatmap, origin='upper')
-    # plt.show()
-    # heatmap.shape
-    print("create_gaze_heatmap shape = ",heatmap.shape)
-    return heatmap
-  
-def normalise_arr(arr):
-  mmax, mmin = np.max(arr), np.min(arr)
-  assert mmax > mmin
-  arr = (arr - mmin +1e-8)/(mmax - mmin + 2e-8)
-  return arr
+    # color = (0, 0, 255)  # BGR 格式的顏色，這裡使用綠色
+    # thickness = 2  # 矩形框的線條寬度
+    # cv2.rectangle(img, (int(gaussian_bbox[0]), int(gaussian_bbox[1])), (int(gaussian_bbox[2]), int(gaussian_bbox[3])), color, thickness)
+
+    
+    std = (math.log10(min_img/min_bbox)+bias)*weight
+    
+
+    
+    # cv2.imshow('Image', img)
+    # cv2.waitKey(0)  # 等待使用者按下任意鍵結束視窗
+    # cv2.destroyAllWindows()  # 關閉視窗
+    
+    
+    return std
+
 
 
 class CTDet_gazeDataset(data.Dataset):
@@ -239,8 +217,13 @@ class CTDet_gazeDataset(data.Dataset):
         x_cameraToScreen_mm, y_cameraToScreen_mm, _ = tvecs 
         
         if self.opt.camera_screen_pos:
+          # print("x_cameraToScreen_mm : ",x_cameraToScreen_mm)
+          # print("y_cameraToScreen_mm : ",y_cameraToScreen_mm)
+          
           camera_screen_x_offset = x_cameraToScreen_mm * vp_pixel_per_mm
           camera_screen_y_offset = y_cameraToScreen_mm * vp_pixel_per_mm
+          # print("camera_screen_x_offset : ",camera_screen_x_offset)
+          # print("camera_screen_y_offset : ",camera_screen_y_offset)
         else:
           camera_screen_x_offset = 0
           camera_screen_y_offset = 0
@@ -349,9 +332,24 @@ class CTDet_gazeDataset(data.Dataset):
       # print(vp_gazepoint_output)
       h, w = self.opt.vp_heatmap_hw, self.opt.vp_heatmap_hw
       if h > 0 and w > 0:
-        gaussian_kernel = 0
+        gaussian_kernel = 1
         if gaussian_kernel:
-          kernel_map = gkern(51, 3)
+          gaussian_bbox = np.array(eval(ann['faceBbox'][0]), dtype=np.float32)
+          # scale_x, scale_y = 1,1
+          if self.opt.resize_raw_image:
+            scale_x = self.opt.resize_raw_image_w / raw_img_width
+            scale_y = self.opt.resize_raw_image_h / raw_img_height
+            gaussian_bbox[0] = gaussian_bbox[0] * scale_x
+            gaussian_bbox[2] = gaussian_bbox[2] * scale_x
+            gaussian_bbox[1] = gaussian_bbox[1] * scale_y
+            gaussian_bbox[3] = gaussian_bbox[3] * scale_y
+          
+          if flipped:
+            gaussian_bbox[[0, 2]] = img_width - gaussian_bbox[[2, 0]] - 1
+        
+        
+          kernel_std = kernel_std_cal(gaussian_bbox, img_height, img_width, self.opt.vp_gkern_r_bias, self.opt.vp_gkern_r_bias )
+          kernel_map = gkern(51, kernel_std)
           ct = np.array([ vp_gazepoint_output[0], vp_gazepoint_output[1]], dtype=np.float32)
           ct_int = ct.astype(np.int32)
           # print(kernel_map.shape)
@@ -369,8 +367,6 @@ class CTDet_gazeDataset(data.Dataset):
         
         
         # print("ct_int = ", ct_int)
-        
-        # hm_d[cls_id] = create_gaze_heatmap(ct_int, gaze_heatmap_size = (output_w, output_h),actual_screen_size = (vp_width, vp_height),guassian_blur = (5,5))
         
 
         # hm_gazepoint_idx = np.where(hm[cls_id] == 20)

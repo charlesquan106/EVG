@@ -13,9 +13,14 @@ import torch.utils.data as data
 class GazeCapture(data.Dataset):
   num_classes = 1
   default_resolution = [512, 512]
-  mean = np.array([0.485, 0.456, 0.406],
+  # mean = np.array([0.485, 0.456, 0.406],
+  #                  dtype=np.float32).reshape(1, 1, 3)
+  # std  = np.array([0.229, 0.224, 0.225],
+  #                  dtype=np.float32).reshape(1, 1, 3)
+  
+  mean = np.array([0.5893, 0.5006, 0.4467],
                    dtype=np.float32).reshape(1, 1, 3)
-  std  = np.array([0.229, 0.224, 0.225],
+  std  = np.array([0.2713, 0.2683, 0.2581],
                    dtype=np.float32).reshape(1, 1, 3)
   
   # mean = np.array([1, 1, 1],
@@ -27,7 +32,7 @@ class GazeCapture(data.Dataset):
     super(GazeCapture, self).__init__()
     self.data_dir = os.path.join(opt.data_dir, 'gaze_GazeCapture_ld')
     self.img_dir = os.path.join(self.data_dir, 'images')
-    _ann_name = {'train': f'train', 'val': f'test'}
+    _ann_name = {'train': f'GC_ld_all_train', 'val': f'GC_ld_phone_test'}
     self.annot_path = os.path.join(
       self.data_dir, 'annotations', 
       'gaze_{}.json').format(_ann_name[split])

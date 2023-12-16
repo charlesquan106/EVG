@@ -95,6 +95,11 @@ class opts(object):
     # vp_heatmap_radius
     self.parser.add_argument('--vp_heatmap_hw', type=int, default=20, 
                              help='virtual plane height.')
+    # vp_gkern_r_bias
+    self.parser.add_argument('--vp_gkern_r_bias', type=float, default = 0.5, 
+                             help='to generate gkern radius with bias.')
+    self.parser.add_argument('--vp_gkern_r_weight', type=float, default = 3, 
+                             help='to generate gkern radius with weight .')
     
     # resize raw image
     self.parser.add_argument('--resize_raw_image', action='store_true',
