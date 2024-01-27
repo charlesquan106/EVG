@@ -38,6 +38,7 @@ def main(opt):
   # print(opt)
   
   early_stopping = EarlyStopping(patience=4,delta=10)
+  # early_stopping = EarlyStopping(patience=70,delta=10000)
   logger = Logger(opt)
 
   force_server_training = 0

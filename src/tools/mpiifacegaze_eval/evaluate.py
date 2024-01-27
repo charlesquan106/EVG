@@ -471,6 +471,9 @@ def main(opt):
     
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_sc_kr/model_5.pth"
     
+    #### eve ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/resdcn_18/gaze_eve_pl001_2/model_2.pth"
+    
     
     #### eve - face ####
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/resdcnface_18/gaze_eve_resdcnface_18_eve_ep20/model_2.pth"
@@ -478,6 +481,8 @@ def main(opt):
     
     #### gazecapture ####    
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/gazecapture/resdcn_18/gaze_gazecapture_ep70_all_hm_adapt_r_no_csp/model_15.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/gazecapture/resdcn_18/gaze_gazecapture_all_no_scp_pl01/model_58.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/gazecapture/resdcn_18/gaze_gazecapture_all_no_scp_pl001/model_53.pth"
     
     #### gazecapture - face ####
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/gazecapture/resdcnface_18/gaze_gc_resdcnface_18_all_f2/model_14.pth"
@@ -497,8 +502,34 @@ def main(opt):
     #### cross pretrain eve  himax ####
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_gray_lr125_4_decay/model_10.pth"
     
-     #### cross pretrain mpii  himax ####   
-    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_gray/model_2.pth"
+    #### cross pretrain mpii  himax ####   
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_gray/model_2.pth"
+    
+    
+    #### cross pretrain eve  himax(train) ####
+    # mono test
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_sp_Ben_all_gray_lr125_4/model_8.pth"
+    # rgb test
+    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_all_rgbtest_gray_lr125_4/model_10.pth"
+    
+    #### cross pretrain mpii  himax(train) ####  
+    # mono test 
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_sp_Ben_all_gray_lr125_4/model_8.pth"
+    # rgb test
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_all_rgbtest_gray_lr125_4/model_7.pth"
+    
+    #### cross pretrain eve himax ct17_cy30   ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_all_ct17_cy30_gray_lr125_4/model_11.pth"
+    
+    #### cross pretrain mpii himax ct17_cy30   ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_all_ct17_cy30_gray_lr125_4/model_1.pth"
+    
+    
+    #### cross pretrain eve himax test spilt   ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_all_test_spilt_gray_lr125_4/model_36.pth"
+    
+    #### cross pretrain mpii himax test spilt   ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_all_test_spilt_gray_lr125_4/model_11.pth"
     
     
     model = load_model(model, model_path)

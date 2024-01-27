@@ -32,7 +32,7 @@ class GazeCapture(data.Dataset):
     super(GazeCapture, self).__init__()
     self.data_dir = os.path.join(opt.data_dir, 'gaze_GazeCapture_ld')
     self.img_dir = os.path.join(self.data_dir, 'images')
-    _ann_name = {'train': f'GC_ld_all_train', 'val': f'GC_ld_phone_test'}
+    _ann_name = {'train': f'GC_ld_all_train', 'val': f'GC_ld_all_test'}
     self.annot_path = os.path.join(
       self.data_dir, 'annotations', 
       'gaze_{}.json').format(_ann_name[split])

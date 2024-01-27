@@ -332,7 +332,7 @@ class CTDet_gazeDataset(data.Dataset):
       # print(vp_gazepoint_output)
       h, w = self.opt.vp_heatmap_hw, self.opt.vp_heatmap_hw
       if h > 0 and w > 0:
-        gaussian_kernel = 1
+        gaussian_kernel = 0
         if gaussian_kernel:
           gaussian_bbox = np.array(eval(ann['faceBbox'][0]), dtype=np.float32)
           # scale_x, scale_y = 1,1
