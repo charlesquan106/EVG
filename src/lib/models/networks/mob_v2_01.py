@@ -381,7 +381,7 @@ def mobilenet_v2(
     # if weights is not None:
     #     _ovewrite_named_param(kwargs, "num_classes", len(weights.meta["categories"]))
 
-    model = MobileNetV2(heads, head_conv, width_mult = 1.0, **kwargs)
+    model = MobileNetV2(heads, head_conv, width_mult = 0.1, **kwargs)
     model.init_weights(pretrained = True)
 
     # if weights is not None:
@@ -422,7 +422,7 @@ def get_pose_net(num_layers,heads,head_conv):
     # print(pretrained_state_dict.keys())
     # print(len(pretrained_state_dict.keys()))
     # print('=> loading pretrained model {}'.format(url))
-    model.load_state_dict(pretrained_state_dict, strict=False)
+    # model.load_state_dict(pretrained_state_dict, strict=False)
     # print(model.state_dict().keys())
     # print(len(model.state_dict().keys()))
     

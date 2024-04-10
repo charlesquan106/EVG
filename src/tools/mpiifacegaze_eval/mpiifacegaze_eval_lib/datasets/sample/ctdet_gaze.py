@@ -139,18 +139,58 @@ class CTDet_gazeDataset(data.Dataset):
       raw_sc_width, raw_sc_height = unit_pixel  
       
       
+
+      gazeOrigin_list = ann["gazeOrigin"]
+      gazeOrigin_str = gazeOrigin_list[0].strip('[]').split()
+      gaze_origin_list = [float(x) for x in gazeOrigin_str] 
+      gaze_origin_tensor = torch.tensor(gaze_origin_list, dtype=torch.float32)
+      # print(gaze_origin_tensor)
+      
+      # print(ann["cameraTransformation"])
+      # camera_transformation = ann.get("cameraTransformation")
+      
+
+      if self.opt.dataset == "eve":   
+
+        cameraTransformation_list = ann["cameraTransformation"]
+        cameraTransformation_str = cameraTransformation_list[0].strip('[]').split()
+        camera_transformation_list = [float(x) for x in cameraTransformation_str] 
+        camera_transformation_tensor = torch.tensor(camera_transformation_list, dtype=torch.float32).reshape(4, 4)
+
+
+
+        headRvec_list = ann["headRvec"]
+        headRvec_str = headRvec_list[0].strip('[]').split()
+        head_rvec_list = [float(x) for x in headRvec_str] 
+        head_rvec_tensor = torch.tensor(head_rvec_list, dtype=torch.float32).reshape(3, 1)
+        # print(head_rvec_tensor)
+
+        gazeR_list = ann["gazeR"]
+        gazeR_str = gazeR_list[0].strip('[]').split()
+        gaze_R_list = [float(x) for x in gazeR_str] 
+        gaze_R_tensor = torch.tensor(gaze_R_list, dtype=torch.float32).reshape(3, 3)
+      # print(gaze_R_tensor)
+      
+      
       # print("screenSize unit_pixel",f'{sc_height}, {sc_width}')
       # sc = np.ones((1, sc_width, sc_height), dtype=np.float32)
       
       # print("file_name",f'{file_name}')
       # print("unit_mm",f'{sc_width_mm} {sc_height_mm}')
       
+      # print(self.opt.vp_pixel_per_mm)
       if self.opt.vp_pixel_per_mm > 0 :
         vp_pixel_per_mm = self.opt.vp_pixel_per_mm
       else : 
         vp_pixel_per_mm = raw_sc_width /raw_sc_width_mm
   
-      raw_mm_per_pixel = raw_sc_width_mm /raw_sc_width
+      raw_mm_per_pixel = np.array([(raw_sc_width_mm /raw_sc_width),(raw_sc_height_mm /raw_sc_height)])
+      # print("raw_mm_per_pixel = ", raw_mm_per_pixel)
+      
+      # raw_mm_per_pixel = np.array([0.28802082 , 0.28796297])
+      # print(type(raw_mm_per_pixel))
+      # print(raw_mm_per_pixel.shape)
+      # print(raw_mm_per_pixel)
       # 5 pixel/mm  norm_screen_plane
       # mm_per_pixel = 0.2
       if vp_pixel_per_mm > 0 :
@@ -186,6 +226,7 @@ class CTDet_gazeDataset(data.Dataset):
       ann_id = ann['id']
       # print(f"id: {ann_id}")
       sc_gazepoint = np.array([x,y],dtype=np.int64)
+      # print("sc_gazepoint ",sc_gazepoint)
 
       if self.opt.dataset == "gazecapture" :
         _ ,tvecs = ann['monitorPose']
@@ -267,6 +308,8 @@ class CTDet_gazeDataset(data.Dataset):
       # vp_gazepoint = [(vp_width/2)+(sc_gazepoint[0]-(sc_width/2)) ,(vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_offset]
       # print(f"vp_gazepoint: {vp_gazepoint}")
       # **************
+      
+      # print("X = ", ((vp_height/2)+(-(sc_height/2))+camera_screen_y_offset))
 
       if vp_gazepoint[0] >= vp_width or vp_gazepoint[0] < 0 or vp_gazepoint[1] >= vp_height or vp_gazepoint[1] < 0:
           print("clamp vp_gazepoint before : ",vp_gazepoint)
@@ -393,7 +436,13 @@ class CTDet_gazeDataset(data.Dataset):
     # if self.opt.debug > 0:
       gt_det = np.array(gt_det, dtype=np.float32) if len(gt_det) > 0 else \
                np.zeros((1, 4), dtype=np.float32)
-      meta = {'c': c, 's': s,'vp_c': vp_c, 'vp_s': vp_s, 'gt_det': gt_det, 'img_id': img_id, "vp_gazepoint": vp_gazepoint,\
-        "mm_per_pixel": raw_mm_per_pixel,"file_name":file_name}
+      # meta = {'c': c, 's': s,'vp_c': vp_c, 'vp_s': vp_s, 'gt_det': gt_det, 'img_id': img_id, "vp_gazepoint": vp_gazepoint,\
+      #   "mm_per_pixel": raw_mm_per_pixel,"file_name":file_name}
+      
+      meta = {'c': c, 's': s,'vp_c': vp_c, 'vp_s': vp_s, 'gt_det': gt_det, 'img_id': img_id, "vp_gazepoint": vp_gazepoint, "sc_gazepoint": sc_gazepoint,\
+        "mm_per_pixel": raw_mm_per_pixel,"file_name":file_name,\
+        "gaze_origin_tensor":gaze_origin_tensor}
+      if self.opt.dataset == "eve":
+        meta.update({"camera_transformation_tensor": camera_transformation_tensor,"head_rvec_tensor":head_rvec_tensor,"gaze_R_tensor":gaze_R_tensor})
       ret['meta'] = meta
     return ret

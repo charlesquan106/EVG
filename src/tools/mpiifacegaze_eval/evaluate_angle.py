@@ -5,6 +5,7 @@ import math
 
 import matplotlib.pyplot as plt
 
+
 import numpy as np
 import torch
 import tqdm
@@ -15,6 +16,9 @@ from mpiifacegaze_eval_lib.models.model import create_model, load_model, save_mo
 from mpiifacegaze_eval_lib.models.decode import ctdet_gaze_decode
 from mpiifacegaze_eval_lib.utils.post_process import ctdet_gaze_post_process
 from mpiifacegaze_eval_lib.models.utils import _sigmoid
+from mpiifacegaze_eval_lib.utils.common import angular_error,calculate_combined_gaze_direction_no_h, calculate_combined_gaze_direction, calculate_combined_gaze_direction_normalize
+import cv2
+
 
 # def euclidean_distance(x1, y1, x2, y2):
 #     distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
@@ -41,6 +45,9 @@ from mpiifacegaze_eval_lib.models.utils import _sigmoid
 #     error = euclidean_distance(x1_mm, y1_mm, x2_mm, y2_mm)
     
 #     return error
+
+
+
 
 class UpdateHeatmap(object):
     def __init__(self,w,h):
@@ -87,7 +94,6 @@ def unit_error_display(heatmap, dets_gt_org_coord, error):
     pass
 
 
-
 def test(model, test_loader, opt):
     
     # heatmap = np.zeros((opt.vp_h,opt.vp_w))
@@ -106,7 +112,11 @@ def test(model, test_loader, opt):
     x_mm_errors = AverageMeter()
     y_mm_errors = AverageMeter()
     
-    losses_gaze = AverageMeter()
+    angle_errors = AverageMeter()
+    yaw_errors = AverageMeter()
+    pitch_errors = AverageMeter()
+    
+
     update_heatmap = UpdateHeatmap(opt.vp_w,opt.vp_h)
     
     L2_pixel_errors_list = []
@@ -117,8 +127,8 @@ def test(model, test_loader, opt):
         for iter_id, batch in enumerate(test_loader):
             print(f"Iteration {iter_id}/ {len(test_loader)}",end="\r")
             
-            if iter_id > 10000:
-                break
+            # if iter_id > 100:
+            #     break
             
             for k in batch:
                 if k != 'meta':
@@ -134,6 +144,15 @@ def test(model, test_loader, opt):
             batch_image = batch_image[0].detach().cpu().numpy()
             batch_image = batch_image.transpose(1, 2, 0)
             
+            gaze_origin_tensor = batch['meta']['gaze_origin_tensor']
+            camera_transformation_tensor = batch['meta']['camera_transformation_tensor']
+            head_rvec_tensor = batch['meta']['head_rvec_tensor']
+            gaze_R_tensor = batch['meta']['gaze_R_tensor']
+            # print("gaze_origin_tensor : ", gaze_origin_tensor)
+            # print("camera_transformation_tensor : ", camera_transformation_tensor)
+            # print("head_rvec_tensor : ", head_rvec_tensor)
+            
+
             # print(batch_image.shape)
             
             # plt.figure(figsize=(12, 4))
@@ -165,9 +184,10 @@ def test(model, test_loader, opt):
             # plt.imshow(batch_image, cmap="gray")
             # plt.title('input image')
             
-            mm_per_pixel = torch.tensor(batch['meta']['mm_per_pixel'].numpy())
+            mm_per_pixel = torch.tensor(batch['meta']['mm_per_pixel'].numpy(), dtype=torch.float32)
             
             # print(type(mm_per_pixel))
+            # print("mm_per_pixel = ", mm_per_pixel)
             # mm_per_pixel = torch.tensor(batch['meta']['mm_per_pixel'].numpy())
             # mm_per_pixel = mm_per_pixel.view(N, 1).expand(N, 2)
             # mm_per_pixel = float(mm_per_pixel.detach().cpu().numpy())
@@ -236,6 +256,7 @@ def test(model, test_loader, opt):
             
             
             
+            
             error = 0
             error = torch.sum((dets_org_coord - dets_gt_org_coord)**2, dim=1)
             L2_pixel_error = torch.sqrt(error)
@@ -255,18 +276,19 @@ def test(model, test_loader, opt):
             # print(error)
             # print(L2_pixel_error)
             # print(error_x,"   ", error_y)
+            # print(mm_per_pixel)
             
             x_pixel_errors.update(error_x)
             y_pixel_errors.update(error_y)
-            x_mm_error = error_x*(mm_per_pixel)
+            x_mm_error = error_x*(mm_per_pixel[0][0])
             x_mm_error = x_mm_error.mean()
             x_mm_errors.update(x_mm_error)
-            y_mm_error = error_y*(mm_per_pixel)
+            y_mm_error = error_y*(mm_per_pixel[0][1])
             y_mm_error = y_mm_error.mean()
             y_mm_errors.update(y_mm_error)
             
             
-            L2_mm_error = torch.sqrt(error*(mm_per_pixel**2))
+            L2_mm_error = torch.sqrt(error*(mm_per_pixel[0]**2))
             L2_mm_error = L2_mm_error.mean()
             L2_mm_errors.update(L2_mm_error)
             
@@ -276,9 +298,74 @@ def test(model, test_loader, opt):
             x = int(dets_gt_org_coord[0][0])
             y = int(dets_gt_org_coord[0][1])
             # print("dets_gt_org_coord: ", x,"  ", y )
+            # print(head_rvec_tensor)
+            
+            # head_rotation = [cv2.Rodrigues(rvec) for rvec in head_rvec_tensor]
+            head_rotation_np = head_rvec_tensor.numpy()
+            # print("head_rotation_np = ",head_rotation_np[0])
+            # print("head_rotation_np.shape = ", head_rotation_np[0].shape)
+            head_rotation,_ = cv2.Rodrigues(head_rotation_np[0])
+            # print("head_rotation = ",head_rotation)
+            # print(type(head_rotation))
+            head_rotation_tensor = torch.tensor(head_rotation)
+            
+            dets_gt_sc_org_coord = torch.tensor(batch['meta']['sc_gazepoint'].numpy(), dtype=torch.float32)
+            # print("dets_gt_sc_org_coord = ", dets_gt_sc_org_coord)
+            
+            # dets_sc_org_coord = torch.tensor(dets_org_coord[0]
+            dets_sc_org_coord = torch.tensor([[(dets_org_coord[0][0]-960),(dets_org_coord[0][1]-1180)]], dtype=torch.float32)
+            
+            # print("dets_sc_org_coord = ", dets_sc_org_coord)
+            
+            # vp_gazepoint = np.array([(vp_width/2)+(sc_gazepoint[0]-(sc_width/2))+ camera_screen_x_offset, (vp_height/2)+(sc_gazepoint[1]-(sc_height/2))+camera_screen_y_offset], dtype=np.float32)
+ 
+            dets_gt_sc_org_coord_mm = torch.tensor([[dets_gt_sc_org_coord[0][0]*mm_per_pixel[0][0],dets_gt_sc_org_coord[0][1]*mm_per_pixel[0][1]]], dtype=torch.float32)
+            dets_sc_org_coord_mm = torch.tensor([[dets_sc_org_coord[0][0]*mm_per_pixel[0][0],dets_sc_org_coord[0][1]*mm_per_pixel[0][1]]], dtype=torch.float32)           
+            
+            # dets_gt_org_coord_mm = torch.tensor([[dets_gt_org_coord[0][0]*mm_per_pixel[0][0],dets_gt_org_coord[0][1]*mm_per_pixel[0][1]]], dtype=torch.float32)
+            # dets_org_coord_mm = torch.tensor([[dets_org_coord[0][0]*mm_per_pixel[0][0],dets_org_coord[0][1]*mm_per_pixel[0][1]]], dtype=torch.float32)
+            # print("dets_gt_org_coord_mm = ", dets_gt_org_coord_mm )
+            # print("dets_org_coord_mm = ", dets_org_coord_mm )
+            
+            
+            direction_gt = calculate_combined_gaze_direction_normalize(gaze_origin_tensor, dets_gt_sc_org_coord_mm,camera_transformation_tensor, gaze_R_tensor)           
+            # direction_gt = calculate_combined_gaze_direction_normalize(gaze_origin_tensor, dets_gt_org_coord_mm,camera_transformation_tensor, gaze_R_tensor)
+            # direction_gt = calculate_combined_gaze_direction_no_h(gaze_origin_tensor, dets_gt_org_coord,camera_transformation_tensor)
+            # print("direction_gt: ",direction_gt)
+            
+            direction = calculate_combined_gaze_direction_normalize(gaze_origin_tensor, dets_sc_org_coord_mm,camera_transformation_tensor, gaze_R_tensor)
+            # direction = calculate_combined_gaze_direction_normalize(gaze_origin_tensor, dets_org_coord_mm,camera_transformation_tensor, gaze_R_tensor)
+            # direction = calculate_combined_gaze_direction_no_h(gaze_origin_tensor, dets_org_coord,camera_transformation_tensor)
+
+            
+            # cal_angular_error = angular_error(direction_gt,direction).mean()
+            # print("angle error :",cal_angular_error)
+            
+            # print(direction_gt)
+            # print(direction)
+            
+            
+            direction_error = abs(np.degrees(direction_gt[0])- np.degrees(direction[0]))
+            # print("direction_error = ", direction_error)
+            yaw_errors.update(direction_error[0])
+            pitch_errors.update(direction_error[1])
+            # print(direction_error)
+            angle_error = angular_error(direction_gt,direction)
+            # print("angle_error = ", angle_error)
+            # print("angle_error type = ",type(angle_error))
+            angle_error = angle_error.mean()
+            # print("angle_error type  mean = ",type(angle_error))
+            angle_errors.update(abs(angle_error))
+            # angle_error = angular_error(direction_a,direction_b)
+            # angle_errors.update(angle_error)
+            # angle_errors.update(angular_error(direction_gt,direction).mean())
             
             
             update_heatmap.update(x,y,L2_pixel_error)
+            
+            
+            
+            
             
             
             # heatmap = update_heatmap.vis()
@@ -359,6 +446,12 @@ def test(model, test_loader, opt):
     mean_y_mm_errors = y_mm_errors.avg
     mean_L2_mm_errors = L2_mm_errors.avg
     
+    mean_yaw_errors = yaw_errors.avg
+    mean_pitch_errors = pitch_errors.avg
+    
+    print("angle_errors = ", angle_errors.sum)
+    mean_angle_errors = angle_errors.avg
+    
     # Creating histogram
     # n_bins = 20
     # fig, axs = plt.subplots(1, 1,
@@ -407,6 +500,10 @@ def test(model, test_loader, opt):
     print(f'The mean error x (pixel) / (mm): {mean_x_pixel_errors:.2f} / {mean_x_mm_errors:.2f} ')
     print(f'The mean error y (pixel) / (mm): {mean_y_pixel_errors:.2f} / {mean_y_mm_errors:.2f}')
     # print(f'The mean error distance (mm): {mean_L2_mm_errors:.2f}')
+    
+    print(f'The mean yaw error (degree): {mean_yaw_errors:.5f}')
+    print(f'The mean pitch error (degree): {mean_pitch_errors:.5f}')
+    print(f'The mean angle error (degree): {mean_angle_errors:.5f}')
 
 
 
@@ -477,7 +574,9 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2/gaze_eve_mobv2_40_64_640/model_1.pth"
     
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2035/gaze_eve_mobv2_035_40_64_640_no_pre/model_2.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2035/gaze_eve_mobv2_035_40_64_480_no_pre/model_4.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2035/gaze_eve_mobv2_035_40_64_480_no_pre/model_4.pth"
+    
+    
     
     
     #### eve - face ####
@@ -519,8 +618,9 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_sp_Ben_all_gray_lr125_4/model_8.pth"
     # rgb test
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_all_rgbtest_gray_lr125_4/model_10.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2035/gaze_eve_mobv2035_40_64_480_weight_himax_all_rgb/model_13.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2/gaze_eve_mobv2_40_64_480_weight_himax_all_rgb/model_13.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2035/gaze_eve_mobv2035_40_64_480_weight_himax_all_rgb/model_13.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2/gaze_eve_mobv2_40_64_480_weight_himax_all_rgb/model_13.pth"
+    
     
     #### cross pretrain mpii  himax(train) ####  
     # mono test 

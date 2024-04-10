@@ -8,22 +8,20 @@ import torch.nn as nn
 import os
 
 from .networks.msra_resnet import get_pose_net
-from .networks.msra_resnet_CBAM import get_pose_net_CBAM 
 from .networks.msra_resnet_cut import get_pose_net as get_pose_net_cut
 from .networks.dlav0 import get_pose_net as get_dlav0
 from .networks.pose_dla_dcn import get_pose_net as get_dla_dcn
 from .networks.resnet_dcn import get_pose_net as get_pose_net_dcn
 from .networks.resnet_dcn_face import get_pose_net_dcn_face as get_pose_net_dcn_face
-from .networks.resnet_dcn_face_CBAM import get_pose_net_dcn_face_CBAM 
 from .networks.resnet_dcn_cut import get_pose_net as get_pose_net_dcn_cut
 from .networks.large_hourglass import get_large_hourglass_net
 from .networks.eff_v2_s import get_pose_net as get_pose_net_eff
 from .networks.mob_v2 import get_pose_net as get_pose_net_mob
-from .networks.mob_v2_035_custom import get_pose_net as get_pose_net_mob_035
+from .networks.mob_v2_035 import get_pose_net as get_pose_net_mob_035
+from .networks.mob_v2_01 import get_pose_net as get_pose_net_mob_01
 
 _model_factory = {
   'res': get_pose_net, # default Resnet with deconv
-  'resCBAM': get_pose_net_CBAM, # default Resnet with deconv
   'rescut': get_pose_net_cut, # default Resnet with deconv
   'dlav0': get_dlav0, # default DLAup
   'dla': get_dla_dcn,
@@ -34,6 +32,7 @@ _model_factory = {
   'effv2s': get_pose_net_eff,
   'mobv2': get_pose_net_mob,
   'mobv2035': get_pose_net_mob_035,
+  'mobv201': get_pose_net_mob_01,
 }
 
 def create_model(arch, heads, head_conv):

@@ -16,6 +16,9 @@ from .networks.resnet_dcn_face import get_pose_net_dcn_face as get_pose_net_dcn_
 from .networks.resnet_dcn_cut import get_pose_net as get_pose_net_dcn_cut
 from .networks.large_hourglass import get_large_hourglass_net
 from .networks.eff_v2_s import get_pose_net as get_pose_net_eff
+from .networks.mob_v2 import get_pose_net as get_pose_net_mob
+from .networks.mob_v2_035 import get_pose_net as get_pose_net_mob_035
+from .networks.mob_v2_01 import get_pose_net as get_pose_net_mob_01
 
 _model_factory = {
   'res': get_pose_net, # default Resnet with deconv
@@ -27,6 +30,9 @@ _model_factory = {
   'resdcncut': get_pose_net_dcn_cut,
   'hourglass': get_large_hourglass_net,
   'effv2s': get_pose_net_eff,
+  'mobv2': get_pose_net_mob,
+  'mobv2035': get_pose_net_mob_035,
+  'mobv201': get_pose_net_mob_01,
 }
 
 def create_model(arch, heads, head_conv):

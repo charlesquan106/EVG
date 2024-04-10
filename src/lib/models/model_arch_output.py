@@ -14,16 +14,13 @@ from torchvision.models import resnet50, ResNet50_Weights
 
 # from networks.msra_resnet import get_pose_net
 # from networks.msra_resnet_cut import get_pose_net
-# from networks.msra_resnet_CBAM import get_pose_net_CBAM as get_pose_net 
-# from networks.resnet_dcn import get_pose_net 
+from networks.resnet_dcn import get_pose_net 
 # from networks.resnet_dcn_cut import get_pose_net 
 # from networks.resnet_dcn_face import get_pose_net_dcn_face 
-# from networks.resnet_dcn_face_CBAM import get_pose_net_dcn_face_CBAM as get_pose_net 
 # from networks.eff_v2_s import get_pose_net 
 # from networks.mob_v2 import get_pose_net
-# from networks.mob_v2_exp_rate_3 import get_pose_net
 # from networks.mob_v2_05 import get_pose_net
-from networks.mob_v2_035_custom import get_pose_net
+# from networks.mob_v2_035 import get_pose_net
 # from networks.mob_v3_s import get_pose_net
 # from networks.mob_v3_l import get_pose_net
 # import torchvision.models as models    
@@ -52,7 +49,7 @@ num_layers = 18
 
 heads = {'hm': 1,'reg':2}
 
-head_conv = 32
+head_conv = 64
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # model = get_pose_net(heads,head_conv).to(device)
@@ -88,7 +85,20 @@ model = get_pose_net(num_layers,heads,head_conv)
 
 
 ######  calflops import calculate_flops  #######
-flops, macs, params = calculate_flops(model, input_shape=(1, 3, 480, 272))
+# flops, macs, params = calculate_flops(model, input_shape=(1, 3, 480, 272))
+
+# pading to 32 times (padding black babckground) -> model size 
+# (640, 360) -> 672, 384
+# (480, 272) -> 512, 288 
+
+
+# #####  Paper input size  #####
+# flops, macs, params = calculate_flops(model, input_shape=(1, 3, 640, 384))
+
+# #####  Himax input size  #####
+flops, macs, params = calculate_flops(model, input_shape=(1, 3, 672, 384))
+# flops, macs, params = calculate_flops(model, input_shape=(1, 3, 512, 288))
+# flops, macs, params = calculate_flops(model, input_shape=(1, 3, 480, 272))
 # flops, macs, params = calculate_flops(model, input_shape=(1, 3, 224, 224))
 print("flops ",flops)
 # print("macs ",macs)
