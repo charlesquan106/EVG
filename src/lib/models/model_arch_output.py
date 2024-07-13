@@ -19,6 +19,7 @@ from networks.resnet_dcn import get_pose_net
 # from networks.resnet_dcn_face import get_pose_net_dcn_face 
 # from networks.eff_v2_s import get_pose_net 
 # from networks.mob_v2 import get_pose_net
+# from networks.mob_v2_face import get_pose_net_mob_face
 # from networks.mob_v2_05 import get_pose_net
 # from networks.mob_v2_035 import get_pose_net
 # from networks.mob_v3_s import get_pose_net
@@ -45,7 +46,7 @@ from thop import profile
 # weights = ResNet50_Weights.DEFAULT
 # weights = EfficientNet_V2_S_Weights.IMAGENET1K_V1
 
-num_layers = 18
+num_layers = 50
 
 heads = {'hm': 1,'reg':2}
 
@@ -56,10 +57,15 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # model = get_pose_net_dcn_face(num_layers,heads,head_conv).to(device)
 # model = get_pose_net_dcn(num_layers,heads,head_conv).to(device)
 
+# model = get_pose_net(num_layers,heads,head_conv).to(device)
+# model = get_pose_net_mob_face(num_layers,heads,head_conv).to(device)
+
 # model = MobileNetV2(width_mult=0.5)
 
 model = get_pose_net(num_layers,heads,head_conv)
 # model = mobilenet_v2(pretrained=True, progress=True)
+
+# model = get_pose_net_mob_face(num_layers,heads,head_conv)
 
 
 # model = get_pose_net(num_layers,heads,head_conv)
@@ -96,8 +102,8 @@ model = get_pose_net(num_layers,heads,head_conv)
 # flops, macs, params = calculate_flops(model, input_shape=(1, 3, 640, 384))
 
 # #####  Himax input size  #####
-flops, macs, params = calculate_flops(model, input_shape=(1, 3, 672, 384))
-# flops, macs, params = calculate_flops(model, input_shape=(1, 3, 512, 288))
+# flops, macs, params = calculate_flops(model, input_shape=(1, 3, 672, 384))
+flops, macs, params = calculate_flops(model, input_shape=(1, 3, 512, 288))
 # flops, macs, params = calculate_flops(model, input_shape=(1, 3, 480, 272))
 # flops, macs, params = calculate_flops(model, input_shape=(1, 3, 224, 224))
 print("flops ",flops)

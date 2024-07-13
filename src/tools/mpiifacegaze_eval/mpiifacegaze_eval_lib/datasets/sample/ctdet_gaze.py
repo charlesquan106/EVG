@@ -139,18 +139,12 @@ class CTDet_gazeDataset(data.Dataset):
       raw_sc_width, raw_sc_height = unit_pixel  
       
       
-
-      gazeOrigin_list = ann["gazeOrigin"]
-      gazeOrigin_str = gazeOrigin_list[0].strip('[]').split()
-      gaze_origin_list = [float(x) for x in gazeOrigin_str] 
-      gaze_origin_tensor = torch.tensor(gaze_origin_list, dtype=torch.float32)
-      # print(gaze_origin_tensor)
-      
-      # print(ann["cameraTransformation"])
-      # camera_transformation = ann.get("cameraTransformation")
-      
-
       if self.opt.dataset == "eve":   
+        
+        gazeOrigin_list = ann["gazeOrigin"]
+        gazeOrigin_str = gazeOrigin_list[0].strip('[]').split()
+        gaze_origin_list = [float(x) for x in gazeOrigin_str] 
+        gaze_origin_tensor = torch.tensor(gaze_origin_list, dtype=torch.float32)
 
         cameraTransformation_list = ann["cameraTransformation"]
         cameraTransformation_str = cameraTransformation_list[0].strip('[]').split()
@@ -169,7 +163,27 @@ class CTDet_gazeDataset(data.Dataset):
         gazeR_str = gazeR_list[0].strip('[]').split()
         gaze_R_list = [float(x) for x in gazeR_str] 
         gaze_R_tensor = torch.tensor(gaze_R_list, dtype=torch.float32).reshape(3, 3)
-      # print(gaze_R_tensor)
+        # print(gaze_R_tensor)
+      elif self.opt.dataset == "himax":   
+        gazeOrigin_list = ann["gazeOrigin"]
+        gazeOrigin_str = gazeOrigin_list[0].strip('[]').split()
+        gazeOrigin_float = [float(element.replace(',', '')) for element in gazeOrigin_str]
+        gaze_origin = np.array(gazeOrigin_float).reshape(1, 3)
+        # print("gaze_origin = ",gaze_origin)
+        # print("gaze_origin = ",gaze_origin.shape)
+        # print("gaze_origin = ",type(gaze_origin))
+        
+        
+        gazeTarget_list = ann["gazeTarget"]
+        gazeTarget_str = gazeTarget_list[0].strip('[]').split()
+        gaze_target_float = [float(element.replace(',', '')) for element in gazeTarget_str]
+        gaze_target = np.array(gaze_target_float).reshape(1, 3)
+        # print("gaze_target = ",gaze_target)
+      
+        
+        
+
+        # print(gaze_R_tensor)
       
       
       # print("screenSize unit_pixel",f'{sc_height}, {sc_width}')
@@ -247,9 +261,10 @@ class CTDet_gazeDataset(data.Dataset):
           # val himax in pixel 
           if self.opt.camera_screen_pos:
             camera_screen_x_offset = 0
-            camera_screen_y_offset = sc_height/2 + 78* vp_pixel_per_mm 
+            camera_screen_y_offset = sc_height/2 + 78* vp_pixel_per_mm  
             # 78 mm camera to screen
             # print(camera_screen_y_offset)
+            # camera_screen_y_offset = 384 + 361.14 = 745.14
           else:
             camera_screen_x_offset = 0
             camera_screen_y_offset = 0
@@ -440,9 +455,11 @@ class CTDet_gazeDataset(data.Dataset):
       #   "mm_per_pixel": raw_mm_per_pixel,"file_name":file_name}
       
       meta = {'c': c, 's': s,'vp_c': vp_c, 'vp_s': vp_s, 'gt_det': gt_det, 'img_id': img_id, "vp_gazepoint": vp_gazepoint, "sc_gazepoint": sc_gazepoint,\
-        "mm_per_pixel": raw_mm_per_pixel,"file_name":file_name,\
-        "gaze_origin_tensor":gaze_origin_tensor}
+        "mm_per_pixel": raw_mm_per_pixel,"file_name":file_name}
       if self.opt.dataset == "eve":
-        meta.update({"camera_transformation_tensor": camera_transformation_tensor,"head_rvec_tensor":head_rvec_tensor,"gaze_R_tensor":gaze_R_tensor})
+        meta.update({"gaze_origin_tensor":gaze_origin_tensor,"camera_transformation_tensor": camera_transformation_tensor,"head_rvec_tensor":head_rvec_tensor,"gaze_R_tensor":gaze_R_tensor})
+      elif self.opt.dataset == "himax":
+        meta.update({"gaze_origin":gaze_origin, "gaze_target":gaze_target})
+        
       ret['meta'] = meta
     return ret

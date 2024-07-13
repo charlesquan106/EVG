@@ -82,21 +82,40 @@ def main(opt):
     #   print(f"{k}:{key_shape}")
     sample_input = sample["input"]
     sample_input = sample_input.transpose(1,2,0)
-    sample_input = cv2.cvtColor(sample_input, cv2.COLOR_BGR2RGB)
+    # sample_input = cv2.cvtColor(sample_input, cv2.COLOR_BGR2RGB)
     
     sample_hm = sample["hm"]
     sample_hm = sample_hm.transpose(1,2,0)
     
-    plt.figure(figsize=(14, 4))
-    plt.subplot(1, 2, 1)
-    plt.imshow(sample_input)
-    plt.title('input image')
+    # plt.figure(figsize=(14, 4))
+    # plt.subplot(1, 2, 1)
+    # plt.imshow(sample_input)
+    # plt.title('input image')
     
-    plt.subplot(1, 2, 2)
-    plt.imshow(sample_hm, cmap="gray")
-    plt.title('gaze hm')
-    plt.show()
+    # plt.subplot(1, 2, 2)
+    # plt.imshow(sample_hm, cmap="gray")
+    # plt.title('gaze hm')
+    # plt.show()
     
+    
+    # *********************
+    
+    # window_height, window_width = 1080, 1920  # 瑷�瀹氳灑骞曞ぇ灏�
+    # # window_height, window_width = 720, 1080  # 瑷�瀹氳灑骞曞ぇ灏�
+    # # black_background = np.zeros((window_height, window_width, 3), dtype=np.uint8)
+    # window_normal = 'Black Window'
+    
+    # cv2.imshow(window_normal, sample_input)
+    
+    # key = cv2.waitKey(1) & 0xFF
+        
+
+    # cv2.waitKey(0)
+    
+    # if key == ord('q'):
+    #     break
+
+  # *********************
     
     if opt.face_hm_head: 
 
@@ -114,7 +133,7 @@ def main(opt):
       # plt.title('face hm')
       # plt.show()
       
-    
+  cv2.destroyAllWindows()
     
   
   print('*****************')

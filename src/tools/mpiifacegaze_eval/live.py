@@ -67,10 +67,15 @@ def main(opt):
     os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
     opt.device = torch.device('cuda' if opt.gpus[0] >= 0 else 'cpu')
     
-    mean = np.array([0.485, 0.456, 0.406],
-                   dtype=np.float32).reshape(1, 1, 3)
-    std  = np.array([0.229, 0.224, 0.225],
-                   dtype=np.float32).reshape(1, 1, 3)
+    # mean = np.array([0.485, 0.456, 0.406],
+    #                dtype=np.float32).reshape(1, 1, 3)
+    # std  = np.array([0.229, 0.224, 0.225],
+    #                dtype=np.float32).reshape(1, 1, 3)
+    
+    mean = np.array([0.40789654, 0.44719302, 0.47026115],
+                    dtype=np.float32).reshape(1, 1, 3)
+    std  = np.array([0.28863828, 0.27408164, 0.27809835],
+                    dtype=np.float32).reshape(1, 1, 3)
     
     
     
@@ -102,7 +107,8 @@ def main(opt):
     
     # setup webcam
     # source = WebcamSource(width=1280, height=720, fps=60, buffer_size=10)
-    source = WebcamSource(camera_id=0 , width=640, height=360, fps=60, buffer_size=10)
+    source = WebcamSource(camera_id=0 , width=672, height=384, fps=60, buffer_size=10)
+    # source = WebcamSource(camera_id=0 , width=480, height=288, fps=60, buffer_size=10)
     # window_height, window_width = 2360, 3840  # 設定螢幕大小
     window_height, window_width = 1080, 1920  # 設定螢幕大小
     # window_height, window_width = 720, 1080  # 設定螢幕大小
@@ -111,9 +117,8 @@ def main(opt):
     
     
     window_normal = 'Black Window'
-    # cv2.namedWindow(window_normal, cv2.WINDOW_KEEPRATIO)
-    # cv2.namedWindow(black_background, cv2.WINDOW_NORMAL)
-    # cv2.setWindowProperty(black_background, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    cv2.namedWindow(window_normal, cv2.WINDOW_KEEPRATIO)
+    cv2.setWindowProperty(window_normal, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
     
     
     
@@ -183,11 +188,15 @@ def main(opt):
     
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/resdcn_18/gaze_eve_pl001_2/model_2.pth"
     
-    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/mpiifacegaze/resdcn_18/gaze_resdcn18_csp_kr_resize_petrain_eve/gaze_resdcn18_csp_kr_resize_p14_petrain_eve/model_16.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/resdcnface_18/gaze_eve_resdcnface_18_480_pl01_f20/model_3.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/mpiifacegaze/resdcn_18/gaze_resdcn18_csp_kr_resize_petrain_eve/gaze_resdcn18_csp_kr_resize_p14_petrain_eve/model_16.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/resdcn_18/gaze_eve_3_webcam/model_3.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/mpiifacegaze/resdcn_18/gaze_resdcn18_ep70_all_keep_res_resize_pl001_p12_pl_fix/model_70.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/resdcn_18/gaze_eve_pl001_1/model_1.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/resdcnface_18/gaze_eve_resdcnface_18_eve_ep10_f10/model_2.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2/gaze_eve_mobv2_40_64_640/model_1.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/mobv2face/gaze_eve_mobv2face_1/model_5.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/mobv2face/gaze_eve_mobv2face_10/model_5.pth"
     model = load_model(model, model_path)
     
     model.eval()
@@ -207,9 +216,9 @@ def main(opt):
     
 
         
-        # img = cv2.resize(img, (opt.resize_raw_image_w, opt.resize_raw_image_h), interpolation=cv2.INTER_LINEAR)
+        img = cv2.resize(img, (opt.resize_raw_image_w, opt.resize_raw_image_h), interpolation=cv2.INTER_LINEAR)
         
-        print(img.shape)
+        print("img shape",img.shape)
         
         # with mp_selfie_segmentation.SelfieSegmentation(model_selection=1) as selfie_segmentation:
             
@@ -234,7 +243,7 @@ def main(opt):
             s = max(img_width, img_height) * 1.0
             input_h, input_w = opt.input_h, opt.input_w
             
-        # print("input_h , input_w = ", input_h,input_w )
+        print("input_h , input_w = ", input_h,input_w )
             
             
         trans_input = get_affine_transform(c, s, 0, [input_w, input_h])
@@ -255,7 +264,7 @@ def main(opt):
         
         inp = inp.transpose(2, 0, 1)
         
-        print("img.shape =", img.shape)
+        print("inp.shape =", inp.shape)
         
         inp = torch.from_numpy(inp).unsqueeze(0)
         
@@ -387,8 +396,31 @@ def main(opt):
         
         # dets_modified = (int((dets_org_coord[0][0]-960)),int((dets_org_coord[0][1]-1080)))
         # dets_modified = (int((dets_org_coord[0][0]-1260)),int((dets_org_coord[0][1]-980)))
-        dets_modified = (int((dets_org_coord[0][0]-960)),int((dets_org_coord[0][1]-980)))
+        # dets_modified = (int((dets_org_coord[0][0]-1200)),int((dets_org_coord[0][1]-1080)))
+        
         # dets_modified = (int((dets_org_coord[0][0]-960)),int((dets_org_coord[0][1]-1180)))
+        dets_modified = (int((dets_org_coord[0][0]/1.03-960)*1.00),int((dets_org_coord[0][1]/1.03-1080)*1.00))
+        # dets_modified = (int((dets_org_coord[0][0]-0)),int((dets_org_coord[0][1]-0)))
+        
+        # if opt.arch == "resdcn_18" :
+        #     dets_modified = (int((dets_org_coord[0][0]-960)),int((dets_org_coord[0][1]-1180)))
+        #     # width  vp + (sc/2) - (vp/2) =  vp + (1920/2) - (3840/2) = vp -  960
+        #     # height  vp + (sc/2) - (vp/2) - camera_screen_y_offset(sc_height/2) =  vp + (1080/2) - (2360/2) - (1080/2)  =  vp - 1180
+
+        #     dets_modified = (int((dets_org_coord[0][0]-960)),int((dets_org_coord[0][1]-1080)))
+        #     # width  vp + (sc/2) - (vp/2) =  vp + (1920/2) - (3840/2) = vp -  960
+        #     # height  vp + (sc/2) - (vp/2) - camera_screen_y_offset(sc_height/2) =  vp + (1080/2) - (2160/2) - (1080/2)  =  vp - 1080
+        
+        # elif opt.arch == "mobv2face" :
+        #     # dets_modified = (int((dets_org_coord[0][0]-960)),int((dets_org_coord[0][1]-1080)))
+        #     dets_modified = (int((dets_org_coord[0][0]-0)),int((dets_org_coord[0][1]-0)))
+            
+            # width  vp + (sc/2) - (vp/2) =  vp + (1920/2) - (3840/2) = vp -  960
+            # height  vp + (sc/2) - (vp/2) - camera_screen_y_offset(sc_height/2) =  vp + (1080/2) - (2160/2) - (1080/2)  =  vp - 1080
+        
+        # MPIIFaceGaze W 1440 H 900
+        # width  vp + (sc/2) - (vp/2) =  vp + (1440/2) - (3840/2) = vp - 1200
+        # height  vp + (sc/2) - (vp/2) - camera_screen_y_offset(sc_height/2) =  vp + (900/2) - (2160/2) - (900/2)  =  vp - 1080
         
         
         # if dets_modified[0] > 1920 or dets_modified[0] < 0 or dets_modified[1] > 1080  or dets_modified[1] < 0 : 
@@ -396,7 +428,38 @@ def main(opt):
         #     continue
         
         print("dets_modified: " , dets_modified)
+        
+
+        # # 1920 x 1080
+        # scale_factor = 1.0
+        # source_size = (1920,1080)
+        # target_size = (int(1920*scale_factor),int(1080*scale_factor))
+
+
+        # scale_x = target_size[0] / source_size[0]
+        # scale_y = target_size[1] / source_size[1]
+        # # target_size = (int(source_size[0] * scale_factor), int(source_size[1] * scale_factor))
+        
+
+        # scaling_matrix = np.array([[scale_x, 0, 0],
+        #                         [0, scale_y, 0],
+        #                         [0, 0, 1]], dtype=np.float32)
+
+        # dets_modified_np = np.array(dets_modified, dtype=np.float32)
+        
+        # dets_modified_np = dets_modified_np.reshape(1, -1, 2)  # Reshape to (1, 1, 2) for cv2.transform
+
+        # print("dets_modified_np.shape: " , dets_modified_np.shape)
+
+        # # Use cv2.transform
+        # calib_coord = cv2.transform(dets_modified_np, scaling_matrix)
+        # calib_coord = calib_coord.flatten() 
+        # print("calib_coord.shape: " , calib_coord.shape)
+
+
         calib_coord = dets_modified
+
+
         # coord = dets_modified.to(torch.int)
             
         
@@ -430,13 +493,23 @@ def main(opt):
         # for point in points_np:
         #     cv2.circle(black_background, tuple(point), 5, (0, 0, 255), -1)  # 半徑為5，顏色為紅色 (BGR 格式)
         
-        cv2.circle(black_background, (refpoint_x,refpoint_y), 10, (0,165,255), -1)  # 繪製紅色圓圈
+        cv2.circle(black_background, (refpoint_x,refpoint_y), 10, (0,165,255), -1)  # 繪製yellow圓圈
         
         
-        PoG_error = (int(np.linalg.norm(np.array((refpoint_x, refpoint_y)) - np.array(point_on_screen))) ,(refpoint_x - point_on_screen[0]),(refpoint_y - point_on_screen[1]))
-        position = (refpoint_x -75 , refpoint_y -25 )
-        cv2.putText(black_background, str(PoG_error), position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0,165,255), 2)
-        
+        PoG_error = int(np.linalg.norm(np.array((refpoint_x, refpoint_y)) - np.array(point_on_screen)))
+        PoG_error_x_y =  int (refpoint_x - point_on_screen[0]),(refpoint_y - point_on_screen[1])
+        position_1 = (refpoint_x -75 , refpoint_y -70 )
+        PoG_error_str_1 = 'PoG ' +  str(PoG_error) 
+        # PoG_error_str = 'PoG error =' +  str(PoG_error)
+        cv2.putText(black_background, PoG_error_str_1, position_1, cv2.FONT_HERSHEY_SIMPLEX, 1, (0,165,255), 2)
+        position_2 = (refpoint_x -75 , refpoint_y -35 )
+        PoG_error_str_2 = ' x,y ' + str(PoG_error_x_y)
+
+        cv2.putText(black_background, PoG_error_str_2, position_2,cv2.FONT_HERSHEY_SIMPLEX, 1, (0,165,255), 2)
+
+
+        # FPS_str = f"FPS = {round(np.mean(fps_deque), 2)}"
+        # cv2.putText(black_background, FPS_str, (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,165,255), 2)
 
         print("gaze_points", len(gaze_points))
 
@@ -466,7 +539,7 @@ def main(opt):
         
     
         # inp_output
-        cv2.imshow("inp_output", inp_output)
+        # cv2.imshow("inp_output", inp_output)
         # inp = inp.transpose(2, 0, 1)
         
         # cv2.namedWindow('Tracking', flags=cv2.WINDOW_GUI_NORMAL)

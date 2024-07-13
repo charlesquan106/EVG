@@ -72,9 +72,26 @@ class CTDet_gazeDataset(data.Dataset):
         # bbox = np.array([faceBbox[0], faceBbox[1], faceBbox[2] , faceBbox[3]],dtype=np.float32)
         bbox = np.array(eval(ann['faceBbox'][0]), dtype=np.float32)
         
-        img_black = np.zeros_like(img)
-        img_black[int(bbox[1]):int(bbox[3]) , int(bbox[0]):int(bbox[2])] = img[int(bbox[1]):int(bbox[3]) , int(bbox[0]):int(bbox[2])]
-        img = img_black
+        # img_bg = np.zeros_like(img)
+        
+
+        img_average_color = cv2.mean(img)[:3]  
+        
+        # img_bg = np.zeros_like(img)
+        img_bg = np.zeros_like(img)
+        
+        img_bg[:] = img_average_color
+        # img_black[int(bbox[1]):int(bbox[3]) , int(bbox[0]):int(bbox[2])] = img[int(bbox[1]):int(bbox[3]) , int(bbox[0]):int(bbox[2])]
+        w = (bbox[3] - bbox[1]) * 1.5
+        w_c = (bbox[3] + bbox[1]) /2
+        h = (bbox[2] - bbox[0]) * 1.5
+        h_c = (bbox[2] + bbox[0]) / 2
+        bbox[1] = w_c - w/2 
+        bbox[3] = w_c + w/2 
+        bbox[0] = h_c - h/2 
+        bbox[2] = h_c + h/2 
+        img_bg[int(bbox[1]):int(bbox[3]) , int(bbox[0]):int(bbox[2])] = img[int(bbox[1]):int(bbox[3]) , int(bbox[0]):int(bbox[2])]
+        img = img_bg
 
     
    

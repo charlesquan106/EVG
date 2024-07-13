@@ -1,0 +1,18 @@
+/dev
+sudo chmod 777 video0
+
+
+/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/live.py
+
+python live.py ctdet_gaze --arch resdcn_18 --keep_res --resize_raw_image --resize_raw_image_h 360 --resize_raw_image_w 640 --vp_h 2360 --vp_w 3840
+
+python live.py ctdet_gaze --arch resdcn_18 --keep_res --resize_raw_image --resize_raw_image_h 270 --resize_raw_image_w 480  --vp_h 2160 --vp_w 3840
+
+python live.py ctdet_gaze --arch mobv2 --keep_res --resize_raw_image --resize_raw_image_h 360 --resize_raw_image_w 640 --vp_h 2360 --vp_w 3840
+
+python live.py ctdet_gaze --arch resdcn_18 --keep_res --resize_raw_image --resize_raw_image_h 270 --resize_raw_image_w 480 --vp_h 2160 --vp_w 3840
+
+python live.py ctdet_gaze --arch mobv2 --keep_res --resize_raw_image --resize_raw_image_h 270 --resize_raw_image_w 480 --vp_h 2160 --vp_w 3840
+
+
+python live.py ctdet_gaze --arch resdcnface_18 --keep_res --resize_raw_image --resize_raw_image_h 270 --resize_raw_image_w 480 --vp_h 2160 --vp_w 3840
