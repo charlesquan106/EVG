@@ -18,6 +18,11 @@ class EVE(data.Dataset):
   std  = np.array([0.229, 0.224, 0.225],
                    dtype=np.float32).reshape(1, 1, 3)
   
+  mean = np.array([0.40789654, 0.44719302, 0.47026115],
+                   dtype=np.float32).reshape(1, 1, 3)
+  std  = np.array([0.28863828, 0.27408164, 0.27809835],
+                   dtype=np.float32).reshape(1, 1, 3)
+  
   # mean = np.array([1, 1, 1],
   #                  dtype=np.float32).reshape(1, 1, 3)
   # std  = np.array([1, 1, 1],
@@ -25,11 +30,12 @@ class EVE(data.Dataset):
 
   def __init__(self, opt, split):
     super(EVE, self).__init__()
-    self.data_dir = os.path.join(opt.data_dir, 'gaze_EVE_ffmpeg')
-    # self.img_dir = os.path.join(self.data_dir, 'images')
-    self.img_dir = os.path.join(self.data_dir, 'images_himax_test_all')
+    self.data_dir = os.path.join(opt.data_dir, 'gaze_EVE_ffmpeg_ld')
+    self.img_dir = os.path.join(self.data_dir, 'images')
+    # self.img_dir = os.path.join(self.data_dir, 'images_himax_test_all')
     # _ann_name = {'train': f'train', 'val': f'val'}
-    _ann_name = {'train': f'train', 'val': f'laptop_test'}
+    _ann_name = {'train': f'train', 'val': f'EVE_ld_ext_val'}
+    # _ann_name = {'train': f'train', 'val': f'EVE_ld_s_val'}
     self.annot_path = os.path.join(
       self.data_dir, 'annotations', 
       'gaze_{}.json').format(_ann_name[split])

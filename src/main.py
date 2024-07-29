@@ -38,6 +38,7 @@ def main(opt):
   # print(opt)
   
   early_stopping = EarlyStopping(patience=4,delta=10)
+  # early_stopping = EarlyStopping(patience=70,delta=10000)
   logger = Logger(opt)
 
   force_server_training = 0
@@ -81,24 +82,59 @@ def main(opt):
     #   print(f"{k}:{key_shape}")
     sample_input = sample["input"]
     sample_input = sample_input.transpose(1,2,0)
+    # sample_input = cv2.cvtColor(sample_input, cv2.COLOR_BGR2RGB)
+    
     sample_hm = sample["hm"]
     sample_hm = sample_hm.transpose(1,2,0)
     
-    # sample_vp = sample["vp"]
-    # sample_vp = sample_vp.transpose(1,2,0)
-    
-    sample_input = cv2.cvtColor(sample_input, cv2.COLOR_BGR2RGB)
-    
+    # plt.figure(figsize=(14, 4))
+    # plt.subplot(1, 2, 1)
     # plt.imshow(sample_input)
-    # plt.axis('off')  # 关闭坐标轴
-    # plt.show()
+    # plt.title('input image')
+    
+    # plt.subplot(1, 2, 2)
     # plt.imshow(sample_hm, cmap="gray")
-    # plt.axis('off')  # 关闭坐标轴
+    # plt.title('gaze hm')
     # plt.show()
     
-    # plt.imshow(sample_vp)
-    # plt.axis('off')  # 关闭坐标轴
-    # plt.show()
+    
+    # *********************
+    
+    # window_height, window_width = 1080, 1920  # 瑷�瀹氳灑骞曞ぇ灏�
+    # # window_height, window_width = 720, 1080  # 瑷�瀹氳灑骞曞ぇ灏�
+    # # black_background = np.zeros((window_height, window_width, 3), dtype=np.uint8)
+    # window_normal = 'Black Window'
+    
+    # cv2.imshow(window_normal, sample_input)
+    
+    # key = cv2.waitKey(1) & 0xFF
+        
+
+    # cv2.waitKey(0)
+    
+    # if key == ord('q'):
+    #     break
+
+  # *********************
+    
+    if opt.face_hm_head: 
+
+      sample_face_hm = sample["face_hm"]
+      sample_face_hm = sample_face_hm.transpose(1,2,0)
+      
+      
+      # plt.figure(figsize=(14, 4))
+      # plt.subplot(1, 2, 1)
+      # plt.imshow(sample_input)
+      # plt.title('input image')
+      
+      # plt.subplot(1, 2, 2)
+      # plt.imshow(sample_face_hm, cmap="gray")
+      # plt.title('face hm')
+      # plt.show()
+      
+  cv2.destroyAllWindows()
+    
   
   print('*****************')
   # exclude_val_index_list = []

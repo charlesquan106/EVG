@@ -18,6 +18,11 @@ class EVE(data.Dataset):
   std  = np.array([0.229, 0.224, 0.225],
                    dtype=np.float32).reshape(1, 1, 3)
   
+  # mean = np.array([0.2766, 0.3915, 0.1913],
+  #                  dtype=np.float32).reshape(1, 1, 3)
+  # std  = np.array([0.1928, 0.1953, 0.1450],
+  #                  dtype=np.float32).reshape(1, 1, 3)
+  
   # mean = np.array([1, 1, 1],
   #                  dtype=np.float32).reshape(1, 1, 3)
   # std  = np.array([1, 1, 1],
@@ -25,12 +30,14 @@ class EVE(data.Dataset):
 
   def __init__(self, opt, split):
     super(EVE, self).__init__()
-    self.data_dir = os.path.join(opt.data_dir, 'gaze_EVE_test')
+    self.data_dir = os.path.join(opt.data_dir, 'gaze_EVE_ffmpeg_ld')
+    # self.data_dir = os.path.join(opt.data_dir, 'gaze_EVE_ffmpeg_ld_3_webcam')
     self.img_dir = os.path.join(self.data_dir, 'images')
     _ann_name = {'train': f'train', 'val': f'val'}
     self.annot_path = os.path.join(
       self.data_dir, 'annotations', 
       'gaze_{}.json').format(_ann_name[split])
+      # 'gaze_EVE_ld_3_webcam_{}.json').format(_ann_name[split])
     self.max_objs = 1
     self.class_name = ['__background__', "gaze"]
     # self._valid_ids = np.arange(1, 21, dtype=np.int32)

@@ -10,9 +10,9 @@ class opts(object):
   def __init__(self):
     self.parser = argparse.ArgumentParser()
     # basic experiment setting
-    self.parser.add_argument('--task', default='ctdet_gaze',
+    self.parser.add_argument('task', default='ctdet',
                              help='ctdet | ctdet_gaze | ddd | multi_pose | exdet')
-    self.parser.add_argument('--dataset', default='mpiifacegaze',
+    self.parser.add_argument('--dataset', default='coco',
                              help='coco | kitti | coco_hp | pascal | mpiifacegaze ')
     self.parser.add_argument('--exp_id', default='default')
     self.parser.add_argument('--test', action='store_true')
@@ -79,14 +79,14 @@ class opts(object):
     self.parser.add_argument('--input_w', type=int, default=-1, 
                              help='input width. -1 for default from dataset.')
     self.parser.add_argument('--gray_image', action='store_true',
-                      help='gray_image')
+                          help='gray_image')
     self.parser.add_argument('--gray_image_with_equalizeHist', action='store_true',
-                  help='gray_image_with_equalizeHist')
+                      help='gray_image_with_equalizeHist')
     
     # vp_size
-    self.parser.add_argument('--vp_h', type=int, default=2100, 
+    self.parser.add_argument('--vp_h', type=int, default=1600, 
                              help='virtual plane height.')
-    self.parser.add_argument('--vp_w', type=int, default=3360, 
+    self.parser.add_argument('--vp_w', type=int, default=2560, 
                              help='virtual plane width.')
     
     self.parser.add_argument('--vp_pixel_per_mm', type=float, default = 0,
@@ -109,9 +109,9 @@ class opts(object):
                              help='learning rate for batch size 32.')
     self.parser.add_argument('--lr_step', type=str, default='90,120',
                              help='drop learning rate by 10.')
-    self.parser.add_argument('--num_epochs', type=int, default=140,
+    self.parser.add_argument('--num_epochs', type=int, default=70,
                              help='total training epochs.')
-    self.parser.add_argument('--batch_size', type=int, default=128,
+    self.parser.add_argument('--batch_size', type=int, default=108,
                              help='batch size')
     self.parser.add_argument('--master_batch_size', type=int, default=-1,
                              help='batch size on the master gpu.')
@@ -122,6 +122,8 @@ class opts(object):
     self.parser.add_argument('--trainval', action='store_true',
                              help='include validation in training and '
                                   'test on test set')
+    self.parser.add_argument('--weight_decay', type=float, default=0, 
+                            help='regularization')
 
     # test
     self.parser.add_argument('--flip_test', action='store_true',
@@ -159,6 +161,8 @@ class opts(object):
     self.parser.add_argument('--no_color_aug', action='store_true',
                              help='not use the color augmenation '
                                   'from CornerNet')
+
+    
     # multi_pose
     self.parser.add_argument('--aug_rot', type=float, default=0, 
                              help='probability of applying '
@@ -186,6 +190,12 @@ class opts(object):
                              help='loss weight for keypoint local offsets.')
     self.parser.add_argument('--wh_weight', type=float, default=0.1,
                              help='loss weight for bounding box size.')
+    # ctdet_gaze
+    self.parser.add_argument('--pog_weight', type=float, default=0,
+                          help='loss weight for PoG.')
+    self.parser.add_argument('--face_hm_weight', type=float, default=1,
+                          help='loss weight for keypoint face heatmaps.')
+    
     # multi_pose
     self.parser.add_argument('--hp_weight', type=float, default=1,
                              help='loss weight for human pose offset.')
@@ -216,10 +226,25 @@ class opts(object):
                           help='not face grid.')
     self.parser.add_argument('--camera_screen_pos', action='store_true',
                       help='camera related screen position.')
-    self.parser.add_argument('--data_train_person_id', type=int, default=1,
+    self.parser.add_argument('--pog_offset', action='store_true',
+                             help='pog offset.')
+    self.parser.add_argument('--heat_map_debug', action='store_true',
+                          help='no need to save heat map to debug.')
+    self.parser.add_argument('--data_train_person_id', type=int, default=4,
                       help='data_train_person_id')
-    self.parser.add_argument('--data_test_person_id', type=int, default=1,
-                      help='data_test_person_id')
+    self.parser.add_argument('--data_test_person_id', type=int, default=4,
+                  help='data_test_person_id') 
+    self.parser.add_argument('--not_data_train_val_exclude', action='store_true',
+                             help='not exclude gaze point excess virtual plane region.')
+    self.parser.add_argument('--face_hm_head', action='store_true',
+                      help='face_hm_head.')
+    self.parser.add_argument('--face_crop_ratio', type = float, default=0,
+                          help='probability of applying face_crop augmentation.')
+    
+
+    
+    # self.parser.add_argument('--pog_offset_start_epoch', type=int, default=10,
+    #                       help='the epoch to enable pog_offset.')
     
     # exdet
     self.parser.add_argument('--agnostic_ex', action='store_true',
@@ -307,7 +332,7 @@ class opts(object):
 
     opt.root_dir = os.path.join(os.path.dirname(__file__))
     opt.data_dir = os.path.join(opt.root_dir, 'data')
-    opt.exp_dir = os.path.join(opt.root_dir, 'exp', opt.task)
+    opt.exp_dir = os.path.join(opt.root_dir, 'exp', opt.task, opt.dataset, opt.arch )
     opt.save_dir = os.path.join(opt.exp_dir, opt.exp_id)
     opt.debug_dir = os.path.join(opt.save_dir, 'debug')
     print('The output will be saved to ', opt.save_dir)
@@ -360,8 +385,17 @@ class opts(object):
       opt.heads = {'hm': opt.num_classes}
       if opt.reg_offset:
         opt.heads.update({'reg': 2})
-      if opt.face_grid:
-        opt.heads.update({'face_grid': 2})
+      if opt.pog_offset:
+        opt.heads.update({'pog': 1})
+    
+    elif opt.task == 'ctdet_gazeface':
+      # assert opt.dataset in ['mpiifacegaze']
+      opt.heads = {'hm': opt.num_classes}
+      if opt.reg_offset:
+        opt.heads.update({'reg': 2})
+      if opt.pog_offset:
+        opt.heads.update({'pog': 1})
+
     elif opt.task == 'multi_pose':
       # assert opt.dataset in ['coco_hp']
       opt.flip_idx = dataset.flip_idx

@@ -95,6 +95,11 @@ class opts(object):
     # vp_heatmap_radius
     self.parser.add_argument('--vp_heatmap_hw', type=int, default=20, 
                              help='virtual plane height.')
+    # vp_gkern_r_bias
+    self.parser.add_argument('--vp_gkern_r_bias', type=float, default = 0.5, 
+                             help='to generate gkern radius with bias.')
+    self.parser.add_argument('--vp_gkern_r_weight', type=float, default = 3, 
+                             help='to generate gkern radius with weight .')
     
     # resize raw image
     self.parser.add_argument('--resize_raw_image', action='store_true',
@@ -117,7 +122,7 @@ class opts(object):
                              help='batch size on the master gpu.')
     self.parser.add_argument('--num_iters', type=int, default=-1,
                              help='default: #samples / batch_size.')
-    self.parser.add_argument('--val_intervals', type=int, default=2,
+    self.parser.add_argument('--val_intervals', type=int, default=1,
                              help='number of epochs to run validation.')
     self.parser.add_argument('--trainval', action='store_true',
                              help='include validation in training and '
@@ -161,10 +166,7 @@ class opts(object):
     self.parser.add_argument('--no_color_aug', action='store_true',
                              help='not use the color augmenation '
                                   'from CornerNet')
-    self.parser.add_argument('--shift_gaze_point_aug',action='store_true',
-                             help='use the shift_gaze_point augmenation ')
-    self.parser.add_argument('--shift_gaze_point_ratio', type = float, default=0.5,
-                             help='probability of applying shift_gaze_point augmentation')
+
     
     # multi_pose
     self.parser.add_argument('--aug_rot', type=float, default=0, 
@@ -196,6 +198,8 @@ class opts(object):
     # ctdet_gaze
     self.parser.add_argument('--pog_weight', type=float, default=0,
                           help='loss weight for PoG.')
+    self.parser.add_argument('--face_hm_weight', type=float, default=1,
+                          help='loss weight for keypoint face heatmaps.')
     
     # multi_pose
     self.parser.add_argument('--hp_weight', type=float, default=1,
@@ -237,6 +241,10 @@ class opts(object):
                   help='data_test_person_id') 
     self.parser.add_argument('--not_data_train_val_exclude', action='store_true',
                              help='not exclude gaze point excess virtual plane region.')
+    self.parser.add_argument('--face_hm_head', action='store_true',
+                      help='face_hm_head.')
+    self.parser.add_argument('--face_crop_ratio', type = float, default=0,
+                          help='probability of applying face_crop augmentation.')
     
 
     
@@ -378,6 +386,14 @@ class opts(object):
       if opt.reg_offset:
         opt.heads.update({'reg': 2})
     elif opt.task == 'ctdet_gaze':
+      # assert opt.dataset in ['mpiifacegaze']
+      opt.heads = {'hm': opt.num_classes}
+      if opt.reg_offset:
+        opt.heads.update({'reg': 2})
+      if opt.pog_offset:
+        opt.heads.update({'pog': 1})
+
+    elif opt.task == 'ctdet_gazeface':
       # assert opt.dataset in ['mpiifacegaze']
       opt.heads = {'hm': opt.num_classes}
       if opt.reg_offset:

@@ -37,6 +37,7 @@ class CtdetGazeLoss(torch.nn.Module):
   def forward(self, outputs, batch):
     opt = self.opt
     hm_loss, off_loss, pog_loss = 0, 0, 0
+    face_hm_loss =  0
     # print(f"outputs['hm']: {outputs['hm'].shape}")
     # print(f"batch['hm']: {batch['hm'].shape}")
     # out_resnet = outputs[1]
@@ -230,9 +231,15 @@ class CtdetGazeLoss(torch.nn.Module):
         
     # pog_weight = opt.pog_weight if opt.pog_offset_start_epoch > 10 else 0
     
+      # ------ face_hm -------#  
+      # print("output['face_hm'] = ",output['face_hm'].shape)
+      # print("batch['face_hm'] = ",batch['face_hm'].shape)
+
+
+
     # loss = opt.hm_weight * hm_loss + opt.off_weight * off_loss  
-    loss = opt.hm_weight * hm_loss + opt.off_weight * off_loss + opt.pog_weight * pog_loss + 1 *regular_loss
-    loss_stats = {'loss': loss, 'hm_loss': hm_loss, 'off_loss': off_loss, 'pog_loss': pog_loss , 'reg_loss': regular_loss}
+    loss = opt.hm_weight * hm_loss + opt.off_weight * off_loss + opt.pog_weight * pog_loss + 1 *regular_loss 
+    loss_stats = {'loss': loss, 'hm_loss': hm_loss, 'off_loss': off_loss, 'pog_loss': pog_loss , 'reg_loss': regular_loss }
     return loss, loss_stats
 
 class Ctdet_GazeTrainer(BaseTrainer):

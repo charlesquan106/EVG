@@ -186,10 +186,10 @@ class MobileNetV2(nn.Module):
         self.features = nn.Sequential(*features)
 
         # building classifier
-        self.classifier = nn.Sequential(
-            nn.Dropout(p=dropout),
-            nn.Linear(self.last_channel, num_classes),
-        )
+        # self.classifier = nn.Sequential(
+        #     nn.Dropout(p=dropout),
+        #     nn.Linear(self.last_channel, num_classes),
+        # )
 
         # weight initialization
         for m in self.modules():
@@ -206,7 +206,7 @@ class MobileNetV2(nn.Module):
                         # used for deconv layers
         self.deconv_layers = self._make_deconv_layer(
             3,
-            [160, 160, 160],
+            [40, 40, 40],
             [4, 4, 4],
         )
         # self.final_layer = []
@@ -215,14 +215,14 @@ class MobileNetV2(nn.Module):
           num_output = self.heads[head]
           if head_conv > 0:
             fc = nn.Sequential(
-                nn.Conv2d(160, head_conv,
+                nn.Conv2d(40, head_conv,
                   kernel_size=3, padding=1, bias=True),
                 nn.ReLU(inplace=True),
                 nn.Conv2d(head_conv, num_output, 
                   kernel_size=1, stride=1, padding=0))
           else:
             fc = nn.Conv2d(
-              in_channels=160,
+              in_channels=40,
               out_channels=num_output,
               kernel_size=1,
               stride=1,
@@ -377,31 +377,11 @@ class MobileNet_V2_Weights(WeightsEnum):
 def mobilenet_v2(
     *, heads, head_conv, weights: Optional[MobileNet_V2_Weights] = None, progress: bool = True, **kwargs: Any
 ) -> MobileNetV2:
-    """MobileNetV2 architecture from the `MobileNetV2: Inverted Residuals and Linear
-    Bottlenecks <https://arxiv.org/abs/1801.04381>`_ paper.
-
-    Args:
-        weights (:class:`~torchvision.models.MobileNet_V2_Weights`, optional): The
-            pretrained weights to use. See
-            :class:`~torchvision.models.MobileNet_V2_Weights` below for
-            more details, and possible values. By default, no pre-trained
-            weights are used.
-        progress (bool, optional): If True, displays a progress bar of the
-            download to stderr. Default is True.
-        **kwargs: parameters passed to the ``torchvision.models.mobilenetv2.MobileNetV2``
-            base class. Please refer to the `source code
-            <https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenetv2.py>`_
-            for more details about this class.
-
-    .. autoclass:: torchvision.models.MobileNet_V2_Weights
-        :members:
-    """
-    weights = MobileNet_V2_Weights.verify(weights)
 
     # if weights is not None:
     #     _ovewrite_named_param(kwargs, "num_classes", len(weights.meta["categories"]))
 
-    model = MobileNetV2(heads, head_conv, **kwargs)
+    model = MobileNetV2(heads, head_conv, width_mult = 1.0, **kwargs)
     model.init_weights(pretrained = True)
 
     # if weights is not None:
@@ -415,17 +395,38 @@ def mobilenet_v2(
 
 def get_pose_net(num_layers,heads,head_conv):
 
-  weights = MobileNet_V2_Weights.IMAGENET1K_V1
-  model = mobilenet_v2( heads = heads ,head_conv=head_conv,weights=weights)
-  
-  
-  url = model_urls['MobileNetV2']
-  pretrained_state_dict_all = model_zoo.load_url(url)
-  # print(pretrained_state_dict_all.keys())
-  pretrained_state_dict = {k:v for k,v in pretrained_state_dict_all.items() if model.state_dict()[k].numel() == v.numel() }
-  # print(pretrained_state_dict.keys())
-  print('=> loading pretrained model {}'.format(url))
-  model.load_state_dict(pretrained_state_dict, strict=False)
 
-  return model
+    model = mobilenet_v2( heads = heads , head_conv=head_conv)
+  
+  
+    # url = model_urls['MobileNetV2']
+    # pretrained_state_dict_all = model_zoo.load_url(url)
+    # # print(pretrained_state_dict_all.keys())
+    # pretrained_state_dict = {k:v for k,v in pretrained_state_dict_all.items() if model.state_dict()[k].numel() == v.numel() }
+    # # print(pretrained_state_dict.keys())
+    # print('=> loading pretrained model {}'.format(url))
+    # model.load_state_dict(pretrained_state_dict, strict=False)
+
+
+    url = model_urls['MobileNetV2']
+    pretrained_state_dict_all = model_zoo.load_url(url)
+    # print(model.state_dict().keys())
+    # print("------------------------------------")
+    # print(pretrained_state_dict_all.keys())
+
+    
+    # Skip pretrained weights that are not suitable for the defined model.
+    pretrained_state_dict = {k: pretrained_state_dict_all[k] for k in model.state_dict().keys() 
+                            if  k in pretrained_state_dict_all and 
+                            pretrained_state_dict_all[k].size() == model.state_dict()[k].size()}
+    # print(pretrained_state_dict.keys())
+    # print(len(pretrained_state_dict.keys()))
+    # print('=> loading pretrained model {}'.format(url))
+    model.load_state_dict(pretrained_state_dict, strict=False)
+    # print(model.state_dict().keys())
+    # print(len(model.state_dict().keys()))
+    
+    # print(model.state_dict().values())
+
+    return model
 

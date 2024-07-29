@@ -14,7 +14,7 @@ from mpiifacegaze_eval_lib.datasets.dataset_factory import get_dataset
 from mpiifacegaze_eval_lib.models.model import create_model, load_model, save_model
 from mpiifacegaze_eval_lib.models.decode import ctdet_gaze_decode
 from mpiifacegaze_eval_lib.utils.post_process import ctdet_gaze_post_process
-
+from mpiifacegaze_eval_lib.models.utils import _sigmoid
 
 # def euclidean_distance(x1, y1, x2, y2):
 #     distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
@@ -101,6 +101,11 @@ def test(model, test_loader, opt):
     
     L2_pixel_errors = AverageMeter()
     L2_mm_errors = AverageMeter()
+    x_pixel_errors = AverageMeter()
+    y_pixel_errors = AverageMeter()
+    x_mm_errors = AverageMeter()
+    y_mm_errors = AverageMeter()
+    
     losses_gaze = AverageMeter()
     update_heatmap = UpdateHeatmap(opt.vp_w,opt.vp_h)
     
@@ -112,22 +117,48 @@ def test(model, test_loader, opt):
         for iter_id, batch in enumerate(test_loader):
             print(f"Iteration {iter_id}/ {len(test_loader)}",end="\r")
             
-            # if iter_id > 500:
-            #     break
+            if iter_id > 10000:
+                break
             
             for k in batch:
                 if k != 'meta':
                     batch[k] = batch[k].to(device=opt.device, non_blocking=True) 
             outputs = model(batch['input'])
+            
+            output = outputs[-1]
+            hm = output['hm'].sigmoid_()
             # print(f"shape of input {batch['input'].shape}")
             
             batch_image = batch['input']
             
             batch_image = batch_image[0].detach().cpu().numpy()
             batch_image = batch_image.transpose(1, 2, 0)
+            
+            # print(batch_image.shape)
+            
+            # plt.figure(figsize=(12, 4))
+            # plt.subplot(1, 3, 1)
             # plt.imshow(batch_image)
             # plt.axis('off')  # 关闭坐标轴
             # plt.show()
+            if opt.face_hm_head: 
+
+                batch_face_hm = batch["face_hm"]
+                batch_face_hm = batch_face_hm[0].detach().cpu().numpy()
+                batch_face_hm = batch_face_hm.transpose(1,2,0)
+                # plt.subplot(1, 3, 2)
+                # plt.imshow(batch_face_hm)
+                # plt.axis('off')  # 关闭坐标轴
+                # plt.show()
+                
+                
+                output_face_hm = _sigmoid(output['face_hm'][0]).detach().cpu().numpy()
+                output_face_hm = output_face_hm.transpose(1, 2, 0)
+                # plt.subplot(1, 3, 3)
+                # plt.imshow(output_face_hm)
+                # plt.show()
+                
+            
             
             # plt.figure(figsize=(16, 4))
             # plt.subplot(1, 3, 1)
@@ -145,8 +176,6 @@ def test(model, test_loader, opt):
             img_id = batch['meta']['img_id']
             # print(f"img_id : {img_id}")
             # print(output)
-            output = outputs[-1]
-            hm = output['hm'].sigmoid_()
             
             
             
@@ -212,6 +241,30 @@ def test(model, test_loader, opt):
             L2_pixel_error = torch.sqrt(error)
             L2_pixel_error = L2_pixel_error.mean()
             L2_pixel_errors.update(L2_pixel_error)
+            
+            # print(dets_org_coord)
+            # print(dets_org_coord[0][0])
+            # print(dets_gt_org_coord[0][0])
+            
+            # print(dets_org_coord[0][1])
+            # print(dets_gt_org_coord[0][1])
+            # print(dets_org_coord.shape)
+            
+            error_x = abs(torch.sum((dets_org_coord[0][0] - dets_gt_org_coord[0][0])).mean())
+            error_y = abs(torch.sum((dets_org_coord[0][1] - dets_gt_org_coord[0][1])).mean())
+            # print(error)
+            # print(L2_pixel_error)
+            # print(error_x,"   ", error_y)
+            
+            x_pixel_errors.update(error_x)
+            y_pixel_errors.update(error_y)
+            x_mm_error = error_x*(mm_per_pixel)
+            x_mm_error = x_mm_error.mean()
+            x_mm_errors.update(x_mm_error)
+            y_mm_error = error_y*(mm_per_pixel)
+            y_mm_error = y_mm_error.mean()
+            y_mm_errors.update(y_mm_error)
+            
             
             L2_mm_error = torch.sqrt(error*(mm_per_pixel**2))
             L2_mm_error = L2_mm_error.mean()
@@ -294,12 +347,16 @@ def test(model, test_loader, opt):
         plt.axhline(y=j, color='black', linewidth=0.5)
 
     plt.title('Quantized Data Visualization')
-    plt.show()
+    # plt.show()
     
     
     
 
     mean_L2_pixel_errors = L2_pixel_errors.avg
+    mean_x_pixel_errors = x_pixel_errors.avg
+    mean_y_pixel_errors = y_pixel_errors.avg
+    mean_x_mm_errors = x_mm_errors.avg
+    mean_y_mm_errors = y_mm_errors.avg
     mean_L2_mm_errors = L2_mm_errors.avg
     
     # Creating histogram
@@ -343,14 +400,18 @@ def test(model, test_loader, opt):
     # plt.yticks(np.arange(0, max(hist) + 1))  # 設定刻度，此處以 1 為間隔
 
     # 顯示圖形
-    plt.show()
+    # plt.show()
     
     
+    print(f'The mean error distance (pixel) / (mm): {mean_L2_pixel_errors:.2f} / {mean_L2_mm_errors:.2f}')
+    print(f'The mean error x (pixel) / (mm): {mean_x_pixel_errors:.2f} / {mean_x_mm_errors:.2f} ')
+    print(f'The mean error y (pixel) / (mm): {mean_y_pixel_errors:.2f} / {mean_y_mm_errors:.2f}')
+    # print(f'The mean error distance (mm): {mean_L2_mm_errors:.2f}')
 
 
 
             
-    return mean_L2_pixel_errors,mean_L2_mm_errors
+    # return mean_L2_pixel_errors, mean_L2_mm_errors, mean_x_pixel_errors, mean_y_pixel_errors
 
 
 def main(opt):
@@ -410,10 +471,76 @@ def main(opt):
     
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_sc_kr/model_5.pth"
     
+    #### eve ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/resdcn_18/gaze_eve_pl001_2/model_2.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2/gaze_eve_mobv2_40_64_480/model_2.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2/gaze_eve_mobv2_40_64_640/model_1.pth"
     
-    #### cross evaluation  ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2035/gaze_eve_mobv2_035_40_64_640_no_pre/model_2.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2035/gaze_eve_mobv2_035_40_64_480_no_pre/model_4.pth"
+    
+    
+    #### eve - face ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/resdcnface_18/gaze_eve_resdcnface_18_eve_ep20/model_2.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/resdcnface_18/gaze_eve_resdcnface_18_eve_ep10_f20/model_1.pth"
+    
+    #### gazecapture ####    
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/gazecapture/resdcn_18/gaze_gazecapture_ep70_all_hm_adapt_r_no_csp/model_15.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/gazecapture/resdcn_18/gaze_gazecapture_all_no_scp_pl01/model_58.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/gazecapture/resdcn_18/gaze_gazecapture_all_no_scp_pl001/model_53.pth"
+    
+    #### gazecapture - face ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/gazecapture/resdcnface_18/gaze_gc_resdcnface_18_all_f2/model_14.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/gazecapture/resdcnface_18/gaze_gc_resdcnface_18_all_f025/model_18.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/gazecapture/resdcnface_18/gaze_gazecapture_all_no_scp_f001/model_35.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/gazecapture/resdcnface_18/gaze_gazecapture_all_no_scp_f01/model_34.pth"
+    
+    
+    
+    #### cross mpii vs himax ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_cross_mpii_himax_gray/model_1.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_impii_resdcn18_p05_test_himax_sc_kr_mono/model_44.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/cross_mpii_himax/resdcn_18/gaze_cross_mpii_himax_laptop_gray_vp_large/model_12.pth"
+    
+    
+    #### cross eve vs himax ####
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_test_himax_sc_kr_mono/model_2.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_impii_resdcn18_p05_test_himax_sc_kr_mono/model_44.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/cross_eve_himax/gaze_cross_eve_himax_gray/model_1.pth"
+    
+    #### cross pretrain eve  himax ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_gray_lr125_4_decay/model_10.pth"
+    
+    #### cross pretrain mpii  himax ####   
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_gray/model_2.pth"
+    
+    
+    #### cross pretrain eve  himax(train) ####
+    # mono test
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_sp_Ben_all_gray_lr125_4/model_8.pth"
+    # rgb test
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_all_rgbtest_gray_lr125_4/model_10.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2035/gaze_eve_mobv2035_40_64_480_weight_himax_all_rgb/model_13.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2/gaze_eve_mobv2_40_64_480_weight_himax_all_rgb/model_13.pth"
+    
+    #### cross pretrain mpii  himax(train) ####  
+    # mono test 
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_sp_Ben_all_gray_lr125_4/model_8.pth"
+    # rgb test
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_all_rgbtest_gray_lr125_4/model_7.pth"
+    
+    #### cross pretrain eve himax ct17_cy30   ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_all_ct17_cy30_gray_lr125_4/model_11.pth"
+    
+    #### cross pretrain mpii himax ct17_cy30   ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_all_ct17_cy30_gray_lr125_4/model_1.pth"
+    
+    
+    #### cross pretrain eve himax test spilt   ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_all_test_spilt_gray_lr125_4/model_36.pth"
+    
+    #### cross pretrain mpii himax test spilt   ####
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_all_test_spilt_gray_lr125_4/model_11.pth"
+    
     
     model = load_model(model, model_path)
     # if opt.load_model != '':
@@ -503,11 +630,14 @@ def main(opt):
     # model.load_state_dict(checkpoint['model'])
     
 
-    L2_pixel_error,L2_mm_error = test(model, test_loader, opt)
+    # L2_pixel_error,L2_mm_error,x_pixel_error,y_pixel_error = test(model, test_loader, opt)
+    test(model, test_loader, opt)
     # print(L2_distance.shape)
 
-    print(f'The mean error distance (pixel): {L2_pixel_error:.2f}')
-    print(f'The mean error distance (mm): {L2_mm_error:.2f}')
+    # print(f'The mean error distance (pixel): {L2_pixel_error:.2f}')
+    # print(f'The mean error x (pixel): {x_pixel_error:.2f}')
+    # print(f'The mean error y (pixel): {y_pixel_error:.2f}')
+    # print(f'The mean error distance (mm): {L2_mm_error:.2f}')
 
     # output_path = output_dir / 'predictions.npy'
     # np.save(output_path, predictions.numpy())
