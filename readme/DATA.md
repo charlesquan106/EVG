@@ -1,6 +1,5 @@
 # Dataset preparation
 
-If you want to reproduce the results in the paper for benchmark evaluation and training, you will need to setup dataset.
 
 
 ### COCO
