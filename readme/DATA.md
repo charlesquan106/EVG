@@ -30,85 +30,17 @@
     ~~~
   It generates `instances_extreme_train2017.json` and `instances_extreme_val2017.json` in `data/coco/annotations/`. 
 
-### Pascal VOC
 
-- Run
+## Plot data
+Due to GitHub's data limitations, I have placed the data for plotting dataset distribution on AISLab-NAS  
+[Plot data](https://aislabnas.ee.ncku.edu.tw/sharing/XwKB0XgZL)
 
-    ~~~
-    cd $CenterNet_ROOT/tools/
-    bash get_pascal_voc.sh
-    ~~~
-- The above script includes:
-    - Download, unzip, and move Pascal VOC images from the [VOC website](http://host.robots.ox.ac.uk/pascal/VOC/). 
-    - [Download](https://storage.googleapis.com/coco-dataset/external/PASCAL_VOC.zip) Pascal VOC annotation in COCO format (from [Detectron](https://github.com/facebookresearch/Detectron/tree/master/detectron/datasets/data)). 
-    - Combine train/val 2007/2012 annotation files into a single json. 
+~~~
+/Data-Weight/Gaze/EVG/plot_data/  
+└── violin_chart/  
+    └── EVE_data
+    └── GazeCapture_data
+    └── MPIIFaceGaze_data
+    └── MPIIFaceGaze_dataset_original
+~~~
 
-
-- Move the created `voc` folder to `data` (or create symlinks) to make the data folder like:
-
-  ~~~
-  ${CenterNet_ROOT}
-  |-- data
-  `-- |-- voc
-      `-- |-- annotations
-          |   |-- pascal_trainval0712.json
-          |   |-- pascal_test2017.json
-          |-- images
-          |   |-- 000001.jpg
-          |   ......
-          `-- VOCdevkit
-  
-  ~~~
-  The `VOCdevkit` folder is needed to run the evaluation script from [faster rcnn](https://github.com/rbgirshick/py-faster-rcnn/blob/master/tools/reval.py).
-
-### KITTI
-
-- Download [images](http://www.cvlibs.net/download.php?file=data_object_image_2.zip), [annotations](http://www.cvlibs.net/download.php?file=data_object_label_2.zip), and [calibrations](http://www.cvlibs.net/download.php?file=data_object_calib.zip) from [KITTI website](http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d) and unzip.
-
-- Download the train-val split of [3DOP](https://xiaozhichen.github.io/files/mv3d/imagesets.tar.gz) and [SubCNN](https://github.com/tanshen/SubCNN/tree/master/fast-rcnn/data/KITTI) and place the data as below
-
-  ~~~
-  ${CenterNet_ROOT}
-  |-- data
-  `-- |-- kitti
-      `-- |-- training
-          |   |-- image_2
-          |   |-- label_2
-          |   |-- calib
-          |-- ImageSets_3dop
-          |   |-- test.txt
-          |   |-- train.txt
-          |   |-- val.txt
-          |   |-- trainval.txt
-          `-- ImageSets_subcnn
-              |-- test.txt
-              |-- train.txt
-              |-- val.txt
-              |-- trainval.txt
-  ~~~
-
-- Run `python convert_kitti_to_coco.py` in `tools` to convert the annotation into COCO format. You can set `DEBUG=True` in `line 5` to visualize the annotation.
-
-- Link image folder
-
-  ~~~
-  cd ${CenterNet_ROOT}/data/kitti/
-  mkdir images
-  ln -s training/image_2 images/trainval
-  ~~~
-
-- The data structure should look like:
-
-  ~~~
-  ${CenterNet_ROOT}
-  |-- data
-  `-- |-- kitti
-      `-- |-- annotations
-          |   |-- kitti_3dop_train.json
-          |   |-- kitti_3dop_val.json
-          |   |-- kitti_subcnn_train.json
-          |   |-- kitti_subcnn_val.json
-          `-- images
-              |-- trainval
-              |-- test
-  ~~~

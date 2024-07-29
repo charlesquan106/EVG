@@ -67,4 +67,21 @@ Keywords: Gaze Estimation, Eye Tracking, Virtual Plane
 
 
 ## Use EVG tutorial
-Please refer to [TUTORIAL.md](readme/tutorial/TUTORIAL.md) for code tutorial.
+Please refer to [TUTORIAL.md](readme/tutorial/TUTORIAL.md) for code tutorial.  
+
+
+## Plot dataset distribution in chart / figure
+
+Each folder has a README.md file to guide you in plotting the related dataset distribution in a figure or chart  
+[Plot](plot)  
+
+~~~
+${CenterNet_ROOT}/  
+└── plot/  
+    └── line_chart 
+    └── violin_chart
+        └── EVE
+        └── GazeCapture
+        └── MPIIFaceGaze
+        └── MPIIFaceGaze_dataset_original
+~~~
