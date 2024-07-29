@@ -24,9 +24,9 @@ python gc_model_angle_error.py -m /home/owenserver/Python/CenterNet_gaze/exp/ctd
 
 輸出的txt 格式
 ---
-後續的matplotlib 會需要依據順序讀取txt 數據
-![alt text](images/image-3.png)
-![alt text](images/image-4.png)
+後續的matplotlib 會需要依據順序讀取txt 數據  
+![alt text](images/image-3.png)  
+![alt text](images/image-4.png)  
 
 
 txt 對應位置的資料

@@ -26,6 +26,8 @@ from networks.resnet_dcn import get_pose_net
 # from networks.mob_v3_l import get_pose_net
 # import torchvision.models as models    
 # from torchvision.models import mobilenet_v2
+# from networks.pose_dla_dcn import get_pose_net as get_dla_dcn
+# from networks.large_hourglass import get_large_hourglass_net
 
 # from networks.msra_resnet_CBAM import get_pose_net_CBAM as get_pose_net   
 
@@ -47,6 +49,7 @@ from thop import profile
 # weights = EfficientNet_V2_S_Weights.IMAGENET1K_V1
 
 num_layers = 50
+# num_layers = 34
 
 heads = {'hm': 1,'reg':2}
 
@@ -75,6 +78,10 @@ model = get_pose_net(num_layers,heads,head_conv)
 # model = get_pose_net_dcn_face(num_layers,heads,head_conv)
 # model = get_pose_net_dcn_face(num_layers= num_layers, heads =heads ).to(device)
 
+# model = get_dla_dcn(num_layers,heads)
+
+# model = get_large_hourglass_net(num_layers,heads,head_conv)
+
 # model = models.mobilenet_v2()
 # summary(model, input_size=  (3,480,272))
 # summary(model, input_size=  (3,224,224))
@@ -97,6 +104,8 @@ model = get_pose_net(num_layers,heads,head_conv)
 # (640, 360) -> 672, 384
 # (480, 272) -> 512, 288 
 
+# hourglass special padding number 128 times
+# (480, 272) -> 512, 384 
 
 # #####  Paper input size  #####
 # flops, macs, params = calculate_flops(model, input_shape=(1, 3, 640, 384))
@@ -104,6 +113,7 @@ model = get_pose_net(num_layers,heads,head_conv)
 # #####  Himax input size  #####
 # flops, macs, params = calculate_flops(model, input_shape=(1, 3, 672, 384))
 flops, macs, params = calculate_flops(model, input_shape=(1, 3, 512, 288))
+# flops, macs, params = calculate_flops(model, input_shape=(1, 3, 512, 384))
 # flops, macs, params = calculate_flops(model, input_shape=(1, 3, 480, 272))
 # flops, macs, params = calculate_flops(model, input_shape=(1, 3, 224, 224))
 print("flops ",flops)
