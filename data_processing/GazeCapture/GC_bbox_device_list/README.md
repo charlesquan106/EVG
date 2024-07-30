@@ -3,7 +3,7 @@
 用於生成兩個txt 
 1. bbox在圖中的兩個座標位置與其中心位置，資料為影像當中的臉部bbox 位置 {x1} {y1} {x2} {y2} {center_x} {center_y}  
 <img src="images/GazeCapture_anno_bbox_anno_box_phone_test.png" alt="alt text" />   
-1. 指定的類別的person id list，用於配合計算faze preprocessing的GazeCapture 的gaze direciton / gaze orgin 數據  
+2. 指定的類別的person id list，用於配合計算faze preprocessing的GazeCapture 的gaze direciton / gaze orgin 數據  
 create_hdf_files_for_faze_gc  
 <img src="images/GazeCapture_person_specific_phone_test.png" alt="alt text" />  
 

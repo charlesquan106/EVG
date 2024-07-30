@@ -65,10 +65,12 @@ Keywords: Gaze Estimation, Eye Tracking, Virtual Plane
 
 <!-- All models and details are available in our [Model zoo](readme/MODEL_ZOO.md). -->
 
+## Installation
+Please refer to [INSTALL.md](readme/INSTALL.md) for project Installation. 
 
-## Use EVG tutorial
-Please refer to [TUTORIAL.md](readme/tutorial/TUTORIAL.md) for code tutorial.  
-
+## Project tutorial and development
+Please refer to [TUTORIAL.md](readme/tutorial/TUTORIAL.md) for code tutorial.   
+Please refer to [DEVELOP](readme/DEVELOP.md) for a basic idea of project development. 
 
 ## Plot dataset distribution in chart / figure
 

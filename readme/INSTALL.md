@@ -1,37 +1,24 @@
 # Installation
 
 
-The code was tested on Ubuntu 16.04, with [Anaconda](https://www.anaconda.com/download) Python 3.6 and [PyTorch]((http://pytorch.org/)) v0.4.1. NVIDIA GPUs are needed for both training and testing.
+The code was tested on Ubuntu 20.04, with [Anaconda](https://www.anaconda.com/download) Python 3.8 and [PyTorch]((http://pytorch.org/))
 After install Anaconda:
 
-0. [Optional but recommended] create a new conda environment. 
+1.  Import conda enviroment and pip install packages:  
+    Prepare the CenterNet_38_env.yml file, where you can modify the desired environment name within the yml.
+    <img src="images/CenterNet_38_env_name.png" alt="alt text" width = 300/>
 
     ~~~
-    conda create --name CenterNet python=3.6
+    conda env create -f CenterNet_38_env.yml
     ~~~
     And activate the environment.
-    
     ~~~
-    conda activate CenterNet
+    pip install torch==1.12.0+cu113 torchvision==0.13.0+cu113 torchaudio==0.12.0 --extra-index-url https://download.pytorch.org/whl/cu113
     ~~~
 
-1. Install pytorch0.4.1:
-
     ~~~
-    conda install pytorch=0.4.1 torchvision -c pytorch
+    pip install -r requirements.txt
     ~~~
-    
-    And disable cudnn batch normalization(Due to [this issue](https://github.com/xingyizhou/pytorch-pose-hg-3d/issues/16)).
-    
-     ~~~
-    # PYTORCH=/path/to/pytorch # usually ~/anaconda3/envs/CenterNet/lib/python3.6/site-packages/
-    # for pytorch v0.4.0
-    sed -i "1194s/torch\.backends\.cudnn\.enabled/False/g" ${PYTORCH}/torch/nn/functional.py
-    # for pytorch v0.4.1
-    sed -i "1254s/torch\.backends\.cudnn\.enabled/False/g" ${PYTORCH}/torch/nn/functional.py
-     ~~~
-     
-     For other pytorch version, you can manually open `torch/nn/functional.py` and find the line with `torch.batch_norm` and replace the `torch.backends.cudnn.enabled` with `False`. We observed slight worse training results without doing so. 
      
 2. Install [COCOAPI](https://github.com/cocodataset/cocoapi):
 
@@ -46,29 +33,35 @@ After install Anaconda:
 3. Clone this repo:
 
     ~~~
-    CenterNet_ROOT=/path/to/clone/CenterNet
-    git clone https://github.com/xingyizhou/CenterNet $CenterNet_ROOT
+    git clone https://github.com/owen1994-tw/CenterNet_gaze.git
     ~~~
 
 
-4. Install the requirements
+4. Build DCNv2:  
 
     ~~~
-    pip install -r requirements.txt
+    /src/lib/models/networks/DCNv2
+    python3 setup.py build develop
     ~~~
+
+5. Test:  
+    Build data short cut link for EVE dataset  
+    ~~~
+    git clone https://github.com/owen1994-tw/CenterNet_gaze.git
+    ~~~
+
+    Training cmd
     
+    ~~~
+    cd /src  
     
-5. Compile deformable convolutional (from [DCNv2](https://github.com/CharlesShang/DCNv2/tree/pytorch_0.4)).
-
-    ~~~
-    cd $CenterNet_ROOT/src/lib/models/networks/DCNv2
-    ./make.sh
-    ~~~
-6. [Optional, only required if you are using extremenet or multi-scale testing] Compile NMS if your want to use multi-scale testing or test ExtremeNet.
-
-    ~~~
-    cd $CenterNet_ROOT/src/lib/external
-    make
+    python main.py ctdet_gaze --exp_id gaze_eve_480_pl01_1_test --arch resdcn_18 --dataset eve --num_epochs 20 --batch_size 64 --vp_h 2160 --vp_w 3840 --vp_pixel_per_mm 3.3 --keep_res --resize_raw_image --resize_raw_image_h 270 --resize_raw_image_w 480 --camera_screen_pos --pog_offset --pog_weight 0.1
     ~~~
 
-7. Download pertained models for [detection]() or [pose estimation]() and move them to `$CenterNet_ROOT/models/`. More models can be found in [Model zoo](MODEL_ZOO.md).
+### Refference
+If you encounter any issues during installation, you can refer to the CenterNet installation steps, as the project is based on modifications of CenterNet
+
+- CenterNet official installation
+  - https://github.com/xingyizhou/CenterNet/blob/master/readme/INSTALL.md
+- Bilibili tutorial Video
+  - https://www.bilibili.com/video/BV1eM4y1o7Xe/?p=2&vd_source=7ceeb6dda3d4cee075e74b143d53677e
