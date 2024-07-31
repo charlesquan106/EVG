@@ -4,8 +4,18 @@
 The code was tested on Ubuntu 20.04, with [Anaconda](https://www.anaconda.com/download) Python 3.8 and [PyTorch]((http://pytorch.org/))
 After install Anaconda:
 
-1.  Import conda enviroment and pip install packages:  
-    Prepare the CenterNet_38_env.yml file, where you can modify the desired environment name within the yml.
+1. Clone this repo:
+
+    ~~~
+    git clone https://github.com/owen1994-tw/CenterNet_gaze.git
+    ~~~
+    or  
+    ~~~
+    unzip CenterNet_gaze-master.zip
+    ~~~
+
+2.  Import conda enviroment and pip install packages:  
+    Prepare the CenterNet_38_env.yml file, where you can modify the desired environment name within the yml.  
     <img src="images/CenterNet_38_env_name.png" alt="alt text" width = 300/>
 
     ~~~
@@ -20,7 +30,7 @@ After install Anaconda:
     pip install -r requirements.txt
     ~~~
      
-2. Install [COCOAPI](https://github.com/cocodataset/cocoapi):
+3. Install [COCOAPI](https://github.com/cocodataset/cocoapi):
 
     ~~~
     # COCOAPI=/path/to/clone/cocoapi
@@ -28,12 +38,6 @@ After install Anaconda:
     cd $COCOAPI/PythonAPI
     make
     python setup.py install --user
-    ~~~
-
-3. Clone this repo:
-
-    ~~~
-    git clone https://github.com/owen1994-tw/CenterNet_gaze.git
     ~~~
 
 
@@ -47,10 +51,17 @@ After install Anaconda:
 5. Test:  
     Build data short cut link for EVE dataset  
     ~~~
-    git clone https://github.com/owen1994-tw/CenterNet_gaze.git
+    ln -s /storage/share/Gaze/gaze_EVE_ffmpeg_ld /home/master_113/nm6134067/CenterNet_gaze-master/data/gaze_EVE_ffmpeg_ld
     ~~~
 
     Training cmd
+
+    [Optional]
+    change training GPU id to 1  in main.py  
+    <img src="images/force_server_training.png" alt="alt text" />
+    ```
+    force_server_training = 0 -> force_server_training = 1
+    ```  
     
     ~~~
     cd /src  
