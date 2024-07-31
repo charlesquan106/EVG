@@ -50,6 +50,7 @@
   - 用於將MPIIFaceGaze dataset 做第二階段的前處裡，由MPIIFaceGaze的voc->coco，會將MPIIFaceGaze內train / val / test 的annotation_xml，單一資料夾內的全部.xml轉換為單一個.json格式  
 - create_hdf_files_for_faze_mpiifacegaze
   - 用於計算MPIIFaceGaze的 normalized_gaze_direction  head_pose normalized_head_pose 等輸出，並且給予後續violin_chart/EVE/data_plot_MPIIFaceGaze.py 繪製dataset 的資料分布  
+
 #### GazeCapture
 
 - data2voc_GC_gp_plot

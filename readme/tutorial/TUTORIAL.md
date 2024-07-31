@@ -61,6 +61,7 @@ Sample 是主要核心的部分，將 original image 轉換為設定大小與 po
 
 ### Virtual Plane with PoG (gazepoint)
 **1. gazepoint 轉換**  
+<img src="images/gazepoint_transform.png" alt="alt text" />   
 透過ann['gazepoint'] 取得注視點，然後再依據 standardize ppm 來調整不同resolution之下的位置  
 <img src="images/ann_gazepoint.png" alt="alt text" />  
 
@@ -109,7 +110,8 @@ https://pytorch.org/vision/stable/models.html
 <img src="images/model.jpg" alt="alt text" />  
 
 ## Networks  
-建立model的核心部分，會選定指定的network，並且可自行調整network的架構，例如 deconvolution 部分的channel 數量設定
+建立model的核心部分，會選定指定的network，並且可自行調整network的架構，例如 deconvolution 部分的channel 數量設定  
+<img src="images/model_deconvolution.png" alt="alt text" />   
 ### <u>resnet_dcn</u>
 ### Path
 `/home/owenserver/Python/CenterNet_gaze/src/lib/models/networks/resnet_dcn.py`  
@@ -131,6 +133,7 @@ PoseResNet(block_class, layers, heads, head_conv=head_conv) 當中的 layers 就
 ### Path  
 `/home/owenserver/Python/CenterNet_gaze/src/lib/models/networks/resnet_dcn_face.py`   
 
+<img src="images/model_resnet_dcn_face.png" alt="alt text" />  
 face 的版本差異在於heads 部分，增加了face_head的處理  
 <img src="images/resnet_dcn_face.png" alt="alt text" />  
 
