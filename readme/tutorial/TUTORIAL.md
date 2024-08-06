@@ -246,7 +246,7 @@ Dataset的路徑/mean /std 等等 設定
 ##  Cmd (pog + face version)  
 Training cmd  
 cmd 的組成主要有幾點
-- ctdet_gaze / ctdet_gaze_face
+- ctdet_gaze / ctdet_gazeface
   - 使用 有/無 face 的版本
 - --exp_id gaze_resdcn18_ep70_all_csp_kr_resize_p11_test 
   - 儲存的id
@@ -282,6 +282,9 @@ cmd 的組成主要有幾點
   - `main.py ctdet_gaze --exp_id gaze_gazecapture_all_no_scp_pl01_test --arch resdcn_18 --dataset gazecapture --num_epochs 70 --lr_step 45,60 --vp_pixel_per_mm 5 --vp_h 2400 --vp_w 2400 --pog_offset --pog_weight 0.1` 
   - `main.py ctdet_gazeface --exp_id gaze_gazecapture_all_no_scp_f1_test --arch resdcnface_18 --dataset gazecapture --num_epochs 60 --lr_step 30,45 --vp_pixel_per_mm 5 --vp_h 2400 --vp_w 2400 --face_hm_head --face_hm_weight 1`
 
+- Himax 
+  - `main.py ctdet_gaze --exp_id gaze_mobv2_40_64_480_weight_himax_all_rgbtest_ttt --arch mobv2 --head_conv 64 --dataset himax --lr 1.25e-4 --num_epochs 40 --vp_h 2400 --vp_w 6200 --vp_pixel_per_mm 0 --keep_res --resize_raw_image --resize_raw_image_h 270 --resize_raw_image_w 480 --camera_screen_pos --batch_size 76` 
+  - `main.py ctdet_gazeface --exp_id gaze_eve_mobv2face_1_ep5_40_64_480_weight_himax_all_rgb_ttt --arch mobv2face --head_conv 64 --dataset himax --load_model /home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/mobv2face/gaze_eve_mobv2face_1/model_5.pth --lr 1.25e-4 --num_epochs 40 --vp_h 2400 --vp_w 6200 --vp_pixel_per_mm 0 --keep_res --resize_raw_image --resize_raw_image_h 270 --resize_raw_image_w 480 --camera_screen_pos --batch_size 64 --face_hm_head --face_hm_weight 1`
 
 ## Weights (exp folder)
 training的 log / cmd opt / epoch weights 等紀錄

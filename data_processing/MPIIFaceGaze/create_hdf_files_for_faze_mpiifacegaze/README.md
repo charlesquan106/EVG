@@ -13,7 +13,6 @@ https://github.com/swook/faze_preprocess
 - input
   - dataset (input-path)
   - supplementary
-  - GazeCapture_person_specific_DEVICE_DATATYPE
 - output
   - GazeCapture_person_specific_test_tablet  
 <img src="images/data_path_1.png" alt="alt text" width="500"/>  

@@ -1,7 +1,7 @@
 功能
 ---
 用於將EVE dataset 做第一階段的前處裡，由EVE的h5->voc，會將EVE 的影像mp4 透過ffmpeg 分割為指定Hz 數量，ex 30Hz -> 30張，並且將特定需要用的annotation資料轉換為xml格式  
-共有兩個程式，voc2coco_EVE(舊版)/ voc2coco_EVE_face_ld(新版)，新版多放了更多標記數據，有多從h5內放了faceBbox / cameraTransformation ...，舊版參考就好，以新版為主。  
+共有兩個程式，data2voc_EVE(舊版)/ data2voc_EVE_face_ld(新版)，新版多放了更多標記數據，有多從h5內放了faceBbox / cameraTransformation ...，舊版參考就好，以新版為主。  
 
 新的影像編號格式如下，依據不同類別/人物/相機編號來做編號，全部的標號不會重複  
 <img src="images/image.png" alt="alt text"/>

@@ -548,74 +548,7 @@ def main(opt):
     optimizer = torch.optim.Adam(model.parameters(), opt.lr)
     start_epoch = 0
 
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_res18_512_ep70/logs_2023-07-08-23-52/model_best.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep3_test/logs_2023-07-08-18-02/model_best.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70/logs_2023-07-08-20-11/model_best.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_256/logs_2023-07-09-17-49/model_45.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_one_person/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_res18_512_ep70_all/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_s_pos/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res_resize_s_pos/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_keep_res_resize_s_pos_l_pog/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline/gaze_resdcn18_ep70_all_test_p04/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp/gaze_resdcn18_csp_p05/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/kr_resize/gaze_resdcn18_kr_resize_p05/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp_kr_resize/gaze_resdcn18_csp_kr_resize_p05/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp_kr_resize_pl/pl01/gaze_resdcn18_csp_kr_resize_pl01_p12/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_test_p14/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/csp_kr_resize_pl/pl001/gaze_resdcn18_ep70_all_keep_res_resize_s_pos_l_pog_0001/model_90.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/vp_s/gaze_resdcn18_test_vp_s_p05/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/sp_norm/gaze_resdcn18_ep70_sp_norm_p12/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm/gaze_resdcn18_ep70_all_base_sp_norm_p10/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize/gaze_resdcn18_ep70_all_csp_kr_resize_p10/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/all_csp_kr_resize_pl/pl001/gaze_resdcn18_ep70_all_csp_kr_resize_pl001_p10/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_flipfix/gaze_resdcn18_ep70_all_base_sp_norm_flipfix_p02/model_70.pth"
-    
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/cross_baseline_sp_norm_gp_shfit/gaze_resdcn18_ep70_all_base_sp_norm_gp_shift_p08/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_ep70_all_norm_csp_kr_pl001_p05_pl_fix/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcn18_csp_kr_resize_p05_petrain_eve/model_56.pth"
-    
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep140_test/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep30_test_all/model_30.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all_phone_pl01/model_70.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_gazecapture_ep70_all/model_70.pth"
-    
-    
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcncut_18_mpii_r10_ep70_all_norm_csp_kr_pl001_p05/model_14.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_resdcncut_18_mpii_r10_ep70_all_norm_csp_kr_pl001_p05/model_14.pth" 
-    
-    
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_eve_sc_kr/model_5.pth"
-    
-    #### eve ####
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/resdcn_18/gaze_eve_pl001_2/model_2.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2/gaze_eve_mobv2_40_64_480/model_2.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2/gaze_eve_mobv2_40_64_640/model_1.pth"
-    
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2035/gaze_eve_mobv2_035_40_64_640_no_pre/model_2.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/mobv2035/gaze_eve_mobv2_035_40_64_480_no_pre/model_4.pth"
-    
-    
-    
-    
-    #### eve - face ####
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/resdcnface_18/gaze_eve_resdcnface_18_eve_ep20/model_2.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/resdcnface_18/gaze_eve_resdcnface_18_eve_ep10_f20/model_1.pth"
-    
-    #### gazecapture ####    
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/gazecapture/resdcn_18/gaze_gazecapture_ep70_all_hm_adapt_r_no_csp/model_15.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/gazecapture/resdcn_18/gaze_gazecapture_all_no_scp_pl01/model_58.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/gazecapture/resdcn_18/gaze_gazecapture_all_no_scp_pl001/model_53.pth"
-    
-    #### gazecapture - face ####
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/gazecapture/resdcnface_18/gaze_gc_resdcnface_18_all_f2/model_14.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/gazecapture/resdcnface_18/gaze_gc_resdcnface_18_all_f025/model_18.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/gazecapture/resdcnface_18/gaze_gazecapture_all_no_scp_f001/model_35.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/gazecapture/resdcnface_18/gaze_gazecapture_all_no_scp_f01/model_34.pth"
-    
-    
+
     
     #### cross mpii vs himax ####
     # model_path = "/home/owenserver/Python/CenterNet_gaze/src/tools/mpiifacegaze_eval/gaze_cross_mpii_himax_gray/model_1.pth"
@@ -639,8 +572,8 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_sp_Ben_all_gray_lr125_4/model_8.pth"
     # rgb test
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_all_rgbtest_gray_lr125_4/model_10.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2035/gaze_eve_mobv2035_40_64_480_weight_himax_all_rgb/model_13.pth"
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2/gaze_eve_mobv2_40_64_480_weight_himax_all_rgb/model_13.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2035/gaze_eve_mobv2035_40_64_480_weight_himax_all_rgb/model_13.pth"
+    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2/gaze_eve_mobv2_40_64_480_weight_himax_all_rgb/model_13.pth"
     
     
     #### cross pretrain mpii  himax(train) ####  
@@ -656,11 +589,7 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_all_ct17_cy30_gray_lr125_4/model_1.pth"
     
     
-    #### cross pretrain eve himax test spilt   ####
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_all_test_spilt_gray_lr125_4/model_36.pth"
-    
-    #### cross pretrain mpii himax test spilt   ####
-    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_mpii_weight_himax_all_test_spilt_gray_lr125_4/model_11.pth"
+
     
     
     model = load_model(model, model_path)

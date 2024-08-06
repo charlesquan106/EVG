@@ -519,7 +519,7 @@ def main(opt):
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_sp_Ben_all_gray_lr125_4/model_8.pth"
     # rgb test
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/resdcn_18/gaze_eve_weight_himax_all_rgbtest_gray_lr125_4/model_10.pth"
-    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2035/gaze_eve_mobv2035_40_64_480_weight_himax_all_rgb/model_13.pth"
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2035/gaze_eve_mobv2035_40_64_480_weight_himax_all_rgb/model_13.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/himax/mobv2/gaze_eve_mobv2_40_64_480_weight_himax_all_rgb/model_13.pth"
     
     #### cross pretrain mpii  himax(train) ####  
