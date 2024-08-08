@@ -115,3 +115,5 @@ src/tools/mpiifacegaze_eval/mpiifacegaze_eval_lib/data/gaze_GazeCapture
 src/tools/mpiifacegaze_eval/mpiifacegaze_eval_lib/data/gaze_MPIIFaceGaze
 src/tools/mpiifacegaze_eval/mpiifacegaze_eval_lib/data/gaze_EVE_ffmpeg
 src/tools/mpiifacegaze_eval/mpiifacegaze_eval_lib/data/gaze_Himax
+ctdet_gaze.tar.gz
+ctdet_gazeface.tar.gz
