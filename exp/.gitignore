@@ -1,3 +1,6 @@
 *
 !.gitignore
 !data_download_link.txt
+
+!demo_gaze_eve_resdcnface_18_480_pl01_f20/
+!demo_gaze_eve_resdcnface_18_480_pl01_f20/model_weight_download_link.txt

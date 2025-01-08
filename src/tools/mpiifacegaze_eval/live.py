@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import pathlib
+from pathlib import Path
 import math
 
 import collections
@@ -187,8 +188,20 @@ def main(opt):
     model = create_model(opt.arch, heads, head_conv)
     
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/resdcn_18/gaze_eve_pl001_2/model_2.pth"
+
     
-    model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/resdcnface_18/gaze_eve_resdcnface_18_480_pl01_f20/model_3.pth"
+    current_file_path = os.path.abspath(__file__)
+
+    # 定位到項目根目錄
+    project_root = os.path.abspath(os.path.join(current_file_path, "../../../../"))
+
+    # 設定 model_path 的相對路徑
+    model_relative_path = "exp/demo_gaze_eve_resdcnface_18_480_pl01_f20/model_3.pth"
+    # 合成完整的 model_path
+    model_path = os.path.join(project_root, model_relative_path)
+    
+    
+    # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gazeface/eve/resdcnface_18/gaze_eve_resdcnface_18_480_pl01_f20/model_3.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/mpiifacegaze/resdcn_18/gaze_resdcn18_csp_kr_resize_petrain_eve/gaze_resdcn18_csp_kr_resize_p14_petrain_eve/model_16.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/eve/resdcn_18/gaze_eve_3_webcam/model_3.pth"
     # model_path = "/home/owenserver/Python/CenterNet_gaze/exp/ctdet_gaze/mpiifacegaze/resdcn_18/gaze_resdcn18_ep70_all_keep_res_resize_pl001_p12_pl_fix/model_70.pth"
@@ -574,7 +587,6 @@ def main(opt):
 
 if __name__ == '__main__':
     opt = opts().parse()
-    # parser = ArgumentParser()
     # parser.add_argument("--calibration_matrix_path", type=str, default='./calibration_matrix.yaml')
     # parser.add_argument("--model_path", type=str, default='./p00.ckpt')
     # parser.add_argument("--monitor_mm", type=str, default=None)
