@@ -1,0 +1,4 @@
+AISLAB NAS : 　/Data-Weight/Gaze/EVG/model_weight
+
+ctdet_gaze.tar.gz
+ctdet_gazeface.tar.gz
